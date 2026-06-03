@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>World Shaboinker Cup 2026 Draw</title>
+<title>World Cup 2026 Draw</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ===== LIGHT MODE ===== */
 [data-theme="light"] {
@@ -34,7 +34,7 @@
 
 * { box-sizing:border-box; margin:0; padding:0; }
 html { transition:background .3s, color .3s; }
-body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; transition:background .3s,color .3s; }
+body { font-family:'Barlow',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; transition:background .3s,color .3s; }
 
 body::before {
   content:''; position:fixed; inset:0; pointer-events:none; z-index:0; transition:opacity .3s;
@@ -67,23 +67,27 @@ header { text-align:center; padding:44px 0 32px; border-bottom:2px solid var(--h
 .logo-wrap { display:inline-flex; flex-direction:column; align-items:center; margin-bottom:10px; }
 
 /* Official WC2026 logo image */
-.wc-logo-img { width:110px; height:auto; margin-bottom:8px; filter:drop-shadow(0 4px 16px rgba(0,0,0,0.18)); }
+.wc-logo-img { width:160px; height:auto; margin-bottom:12px; filter:drop-shadow(0 6px 20px rgba(0,0,0,0.22)); }
 
 .logo-title-line {
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(36px,7vw,68px);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(42px,9vw,88px);
+  font-weight:800;
   letter-spacing:.06em;
-  line-height:1;
+  line-height:0.95;
+  text-transform:uppercase;
   background:linear-gradient(135deg,var(--sky) 0%,var(--red) 50%,var(--sun) 100%);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  margin-bottom:4px;
+  margin-bottom:6px;
 }
 .logo-sub-line {
-  font-family:'Bebas Neue',sans-serif;
-  font-size:clamp(14px,3vw,22px);
-  letter-spacing:.18em;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:500;
+  font-size:clamp(14px,3vw,20px);
+  letter-spacing:.22em;
+  text-transform:uppercase;
   color:var(--muted);
-  margin-bottom:12px;
+  margin-bottom:14px;
 }
 
 /* Host flags */
@@ -95,6 +99,15 @@ header { text-align:center; padding:44px 0 32px; border-bottom:2px solid var(--h
 
 .header-sub { margin-top:10px; font-size:14px; color:var(--muted); font-weight:300; }
 
+/* ===== HOW TO PLAY ===== */
+.how-to-play { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px 26px; margin-bottom:28px; box-shadow:var(--shadow); }
+.htp-title { font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:20px; letter-spacing:.1em; text-transform:uppercase; color:var(--sky); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.htp-steps { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+.htp-step { display:flex; gap:12px; align-items:flex-start; }
+.htp-num { font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:28px; line-height:1; color:var(--red); min-width:28px; }
+.htp-text { font-size:13px; color:var(--muted); line-height:1.5; padding-top:4px; }
+.htp-text strong { color:var(--text); font-weight:600; display:block; margin-bottom:2px; font-size:14px; }
+
 /* ===== SETUP ===== */
 .setup-panel { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:22px 26px; margin-bottom:28px; box-shadow:var(--shadow); }
 .setup-row { display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
@@ -103,23 +116,23 @@ header { text-align:center; padding:44px 0 32px; border-bottom:2px solid var(--h
 .setup-control { display:flex; align-items:center; gap:8px; }
 .count-btn { width:34px; height:34px; border-radius:9px; border:1.5px solid var(--border); background:var(--surface2); color:var(--text); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .15s; font-weight:500; }
 .count-btn:hover { border-color:var(--sky); color:var(--sky); }
-.count-display { font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--sky); min-width:32px; text-align:center; }
-.buyin-input { background:var(--surface2); border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:15px; padding:7px 12px; width:100px; outline:none; transition:border .15s; }
+.count-display { font-family:'Barlow Condensed',sans-serif; font-size:24px; color:var(--sky); min-width:32px; text-align:center; }
+.buyin-input { background:var(--surface2); border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:'Barlow',sans-serif; font-size:15px; padding:7px 12px; width:100px; outline:none; transition:border .15s; }
 .buyin-input:focus { border-color:var(--sky); }
 .euro-label { font-size:14px; color:var(--muted); }
-.prize-display { font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--green); }
+.prize-display { font-family:'Barlow Condensed',sans-serif; font-size:24px; color:var(--green); }
 .players-setup-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(155px,1fr)); gap:8px; margin-top:4px; }
 .player-name-wrap { position:relative; }
-.player-name-input { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 28px 8px 10px; outline:none; transition:border .15s; }
+.player-name-input { width:100%; background:var(--surface2); border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:'Barlow',sans-serif; font-size:13px; padding:8px 28px 8px 10px; outline:none; transition:border .15s; }
 .player-name-input:focus { border-color:var(--sky); }
 .player-num { position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:10px; color:var(--muted); pointer-events:none; }
-.apply-btn { padding:10px 22px; background:var(--sky); border:none; border-radius:10px; color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all .18s; box-shadow:0 2px 8px rgba(0,119,200,0.25); }
+.apply-btn { padding:10px 22px; background:var(--sky); border:none; border-radius:10px; color:#fff; font-family:'Barlow',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all .18s; box-shadow:0 2px 8px rgba(0,119,200,0.25); }
 .apply-btn:hover { background:var(--sky-light); }
 .pot-sum { font-size:13px; color:var(--muted); }
 
 /* ===== TABS ===== */
 .tabs { display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:5px; margin-bottom:32px; box-shadow:var(--shadow); }
-.tab { flex:1; padding:11px 0; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; background:none; border:none; border-radius:10px; color:var(--muted); cursor:pointer; transition:all .2s; }
+.tab { flex:1; padding:11px 0; font-family:'Barlow',sans-serif; font-size:14px; font-weight:500; background:none; border:none; border-radius:10px; color:var(--muted); cursor:pointer; transition:all .2s; }
 .tab:hover:not(.active) { color:var(--text); background:var(--surface2); }
 .tab.active { color:#fff; font-weight:600; }
 .tab:nth-child(1).active { background:var(--sky); }
@@ -131,7 +144,7 @@ header { text-align:center; padding:44px 0 32px; border-bottom:2px solid var(--h
 .pots-info { font-size:13px; color:var(--muted); margin-bottom:20px; line-height:1.6; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; }
 .pot-card { border:1px solid var(--border); border-radius:14px; margin-bottom:11px; overflow:hidden; background:var(--surface); box-shadow:0 1px 6px rgba(0,0,0,0.06); }
 .pot-header { display:flex; align-items:center; justify-content:space-between; padding:11px 16px; border-bottom:1px solid var(--border2); }
-.pot-label { font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:.1em; }
+.pot-label { font-family:'Barlow Condensed',sans-serif; font-size:17px; letter-spacing:.1em; }
 .pot-range { font-size:11px; padding:3px 11px; border-radius:20px; font-weight:600; letter-spacing:.04em; }
 .pot-teams { padding:12px 16px; display:flex; flex-wrap:wrap; gap:6px; }
 .team-tag { font-size:13px; padding:5px 11px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); color:var(--text); display:flex; align-items:center; gap:6px; transition:all .15s; }
@@ -154,7 +167,7 @@ header { text-align:center; padding:44px 0 32px; border-bottom:2px solid var(--h
 @media(max-width:600px){ .draw-layout { grid-template-columns:1fr; } }
 .section-heading { font-size:11px; font-weight:600; letter-spacing:.14em; color:var(--muted); text-transform:uppercase; margin-bottom:10px; }
 .players-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:18px; }
-.player-btn { padding:9px 5px; background:var(--surface); border:1.5px solid var(--border); border-radius:9px; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer; transition:all .18s; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
+.player-btn { padding:9px 5px; background:var(--surface); border:1.5px solid var(--border); border-radius:9px; color:var(--muted); font-family:'Barlow',sans-serif; font-size:12px; cursor:pointer; transition:all .18s; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
 .player-btn:hover { border-color:var(--sky); color:var(--sky); }
 .player-btn.selected { background:var(--red); border-color:var(--red); color:#fff; font-weight:600; }
 .player-btn.done { opacity:.35; pointer-events:none; }
@@ -166,14 +179,14 @@ header { text-align:center; padding:44px 0 32px; border-bottom:2px solid var(--h
 .dot.done { background:var(--green); border-color:var(--green); }
 .dot.current { background:var(--sun); border-color:#b8860b; }
 .draw-right { display:flex; flex-direction:column; align-items:center; gap:14px; }
-canvas#wheel { border-radius:50%; display:block; max-width:100%; box-shadow:0 4px 24px rgba(0,0,0,0.14); }
+canvas#wheel { display:block; max-width:100%; }
 .result-card { width:100%; background:var(--surface); border:1.5px solid var(--border); border-radius:14px; padding:16px 20px; text-align:center; min-height:70px; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:var(--shadow); transition:border-color .3s,background .3s; }
 .result-card.landed { border-color:var(--green); }
 .result-card.bonus-landed { border-color:var(--sun); }
-.result-team { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:.06em; color:var(--text); }
+.result-team { font-family:'Barlow Condensed',sans-serif; font-size:28px; letter-spacing:.06em; color:var(--text); }
 .result-meta { font-size:12px; color:var(--muted); margin-top:3px; }
 .btns { display:flex; gap:8px; width:100%; }
-.btn { flex:1; padding:12px 0; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all .18s; border:1.5px solid var(--border); background:var(--surface); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+.btn { flex:1; padding:12px 0; border-radius:10px; font-family:'Barlow',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all .18s; border:1.5px solid var(--border); background:var(--surface); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.07); }
 .btn:hover { background:var(--surface2); }
 .btn:disabled { opacity:.3; cursor:not-allowed; }
 .btn-primary { background:var(--sky); border-color:var(--sky); color:#fff; }
@@ -191,17 +204,17 @@ canvas#wheel { border-radius:50%; display:block; max-width:100%; box-shadow:0 4p
 .bonus-pick-title { font-size:13px; font-weight:600; color:#8b6914; margin-bottom:10px; }
 [data-theme="dark"] .bonus-pick-title { color:#ffd740; }
 .bonus-team-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:7px; }
-.bonus-team-btn { padding:9px 10px; background:var(--surface2); border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; transition:all .18s; text-align:center; display:flex; align-items:center; gap:6px; }
+.bonus-team-btn { padding:9px 10px; background:var(--surface2); border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:'Barlow',sans-serif; font-size:13px; cursor:pointer; transition:all .18s; text-align:center; display:flex; align-items:center; gap:6px; }
 .bonus-team-btn:hover { border-color:var(--sun); background:rgba(255,204,0,0.12); }
 
 /* ===== RESULTS ===== */
 .prize-banner { background:linear-gradient(135deg,var(--sky) 0%,#0055a5 100%); border-radius:14px; padding:20px 24px; margin-bottom:22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; box-shadow:0 4px 20px rgba(0,119,200,0.3); }
 [data-theme="dark"] .prize-banner { background:linear-gradient(135deg,#1a4a7a 0%,#0d2d4d 100%); }
 .prize-banner-label { font-size:12px; color:rgba(255,255,255,0.75); margin-bottom:2px; letter-spacing:.08em; text-transform:uppercase; }
-.prize-banner-amount { font-family:'Bebas Neue',sans-serif; font-size:42px; color:#fff; letter-spacing:.05em; line-height:1; }
+.prize-banner-amount { font-family:'Barlow Condensed',sans-serif; font-size:42px; color:#fff; letter-spacing:.05em; line-height:1; }
 .prize-banner-note { font-size:12px; color:rgba(255,255,255,0.65); margin-top:2px; }
 .alloc-card { background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:9px; display:flex; align-items:flex-start; gap:14px; box-shadow:0 1px 5px rgba(0,0,0,0.06); }
-.alloc-name { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:.06em; color:var(--text); min-width:95px; padding-top:2px; }
+.alloc-name { font-family:'Barlow Condensed',sans-serif; font-size:18px; letter-spacing:.06em; color:var(--text); min-width:95px; padding-top:2px; }
 .alloc-teams { display:flex; flex-wrap:wrap; gap:5px; }
 .alloc-chip { font-size:12px; padding:4px 9px; border-radius:7px; background:var(--alloc-chip-bg); border:1px solid var(--border); color:var(--text); display:flex; align-items:center; gap:5px; }
 .alloc-chip .fl { font-size:14px; }
@@ -239,8 +252,8 @@ canvas#wheel { border-radius:50%; display:block; max-width:100%; box-shadow:0 4p
     <img class="wc-logo-img" src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/2026_FIFA_World_Cup.svg/200px-2026_FIFA_World_Cup.svg.png"
          onerror="this.style.display='none'"
          alt="FIFA World Cup 2026 logo">
-    <div class="logo-title-line">World Shaboinker Cup 2026</div>
-    <div class="logo-sub-line">Draw · Winner Takes All</div>
+    <div class="logo-title-line">World Cup 2026 Draw</div>
+    <div class="logo-sub-line">Winner Takes All</div>
     <div class="logo-hosts">
       <div class="host-flag">
         <span class="host-flag-img">🇺🇸</span>
@@ -260,6 +273,33 @@ canvas#wheel { border-radius:50%; display:block; max-width:100%; box-shadow:0 4p
   </div>
   <div class="header-sub" id="headerSub">Draw · winner takes all</div>
 </header>
+
+<!-- HOW TO PLAY -->
+<div class="how-to-play">
+  <div class="htp-title">⚽ How It Works</div>
+  <div class="htp-steps">
+    <div class="htp-step">
+      <div class="htp-num">1</div>
+      <div class="htp-text"><strong>Set up the game</strong>Enter how many players are joining, rename them, and set a buy-in amount per person. Hit Apply.</div>
+    </div>
+    <div class="htp-step">
+      <div class="htp-num">2</div>
+      <div class="htp-text"><strong>Understand the pots</strong>All 48 World Cup teams are split into pots by FIFA ranking — Pot 1 has the best teams, the last pot has the weakest. Each player gets one team from every pot.</div>
+    </div>
+    <div class="htp-step">
+      <div class="htp-num">3</div>
+      <div class="htp-text"><strong>Do the draw</strong>In the Draw tab, select a player and hit Spin. The wheel randomly assigns them a team from the current pot. Repeat for every player, working through all pots.</div>
+    </div>
+    <div class="htp-step">
+      <div class="htp-num">4</div>
+      <div class="htp-text"><strong>Bonus draw</strong>If there are leftover teams, the wheel picks a lucky player at random — that player then chooses whichever bonus team they want. Repeats until all bonus teams are gone.</div>
+    </div>
+    <div class="htp-step">
+      <div class="htp-num">5</div>
+      <div class="htp-text"><strong>Follow the tournament</strong>Everyone roots for all their teams. Whoever has the team that wins the World Cup takes the entire prize pool. Simple as that.</div>
+    </div>
+  </div>
+</div>
 
 <!-- SETUP -->
 <div class="setup-panel">
@@ -334,9 +374,12 @@ canvas#wheel { border-radius:50%; display:block; max-width:100%; box-shadow:0 4p
       </div>
     </div>
     <div class="draw-right">
-      <canvas id="wheel" width="300" height="300"></canvas>
+      <div style="position:relative;display:inline-block;">
+        <canvas id="wheel" width="600" height="600" style="width:300px;height:300px;border-radius:50%;display:block;max-width:100%;box-shadow:0 4px 24px rgba(0,0,0,0.14);"></canvas>
+        <div id="wheelFlags" style="position:absolute;top:0;left:0;width:300px;height:300px;pointer-events:none;border-radius:50%;overflow:hidden;"></div>
+      </div>
       <div class="result-card" id="resultCard">
-        <div class="result-team" id="resultTeam" style="color:var(--muted);font-size:15px;font-family:'DM Sans',sans-serif;font-weight:300;">Select a player, then spin</div>
+        <div class="result-team" id="resultTeam" style="color:var(--muted);font-size:15px;font-family:'Barlow',sans-serif;font-weight:300;">Select a player, then spin</div>
         <div class="result-meta" id="resultMeta"></div>
       </div>
       <div class="btns">
@@ -490,6 +533,58 @@ const ALL48=[
 const WC=['#0077c8','#e8233a','#00a651','#9b27af','#e85d04','#0077c8','#e8233a','#00a651','#9b27af'];
 const WB=['rgba(0,119,200,.15)','rgba(232,35,58,.15)','rgba(0,166,81,.15)','rgba(155,39,175,.15)','rgba(232,93,4,.15)','rgba(0,119,200,.15)','rgba(232,35,58,.15)','rgba(0,166,81,.15)','rgba(155,39,175,.15)'];
 const WBD=['rgba(0,119,200,.25)','rgba(232,35,58,.25)','rgba(0,166,81,.25)','rgba(155,39,175,.25)','rgba(232,93,4,.25)','rgba(0,119,200,.25)','rgba(232,35,58,.25)','rgba(0,166,81,.25)','rgba(155,39,175,.25)'];
+
+// National/kit colours for each country (primary, secondary)
+const TEAM_COLORS = {
+  "France":     ["#003189","#ffffff"],
+  "Spain":      ["#c60b1e","#f1bf00"],
+  "Argentina":  ["#74acdf","#ffffff"],
+  "England":    ["#ffffff","#cf081f"],
+  "Portugal":   ["#006600","#ff0000"],
+  "Brazil":     ["#009c3b","#ffdf00"],
+  "Netherlands":["#ff6600","#1e3a5f"],
+  "Morocco":    ["#c1272d","#006233"],
+  "Belgium":    ["#000000","#f50000"],
+  "Germany":    ["#000000","#dd0000"],
+  "Croatia":    ["#cc0000","#ffffff"],
+  "Colombia":   ["#ffd700","#003087"],
+  "Senegal":    ["#00853f","#fdef42"],
+  "Mexico":     ["#006847","#ce1126"],
+  "USA":        ["#b22234","#3c3b6e"],
+  "Uruguay":    ["#5aaae7","#ffffff"],
+  "Japan":      ["#bc002d","#ffffff"],
+  "Switzerland":["#ff0000","#ffffff"],
+  "Iran":       ["#239f40","#ffffff"],
+  "Austria":    ["#ed2939","#ffffff"],
+  "Ecuador":    ["#ffdd00","#0033a0"],
+  "South Korea":["#c60c30","#003478"],
+  "Australia":  ["#ffcd00","#00843d"],
+  "Egypt":      ["#ce1126","#ffffff"],
+  "Canada":     ["#ff0000","#ffffff"],
+  "Ivory Coast":["#f77f00","#009a44"],
+  "Qatar":      ["#8d1b3d","#ffffff"],
+  "Algeria":    ["#006233","#ffffff"],
+  "Sweden":     ["#006aa7","#fecc02"],
+  "Tunisia":    ["#e70013","#ffffff"],
+  "Czechia":    ["#d7141a","#ffffff"],
+  "Turkey":     ["#e30a17","#ffffff"],
+  "Norway":     ["#ef2b2d","#ffffff"],
+  "Scotland":   ["#003399","#ffffff"],
+  "DR Congo":   ["#007fff","#f7d618"],
+  "Bosnia":     ["#002395","#ffcd00"],
+  "Panama":     ["#db2016","#ffffff"],
+  "Saudi Arabia":["#006c35","#ffffff"],
+  "South Africa":["#007a4d","#ffb81c"],
+  "Iraq":       ["#ce1126","#000000"],
+  "Paraguay":   ["#d52b1e","#ffffff"],
+  "Jordan":     ["#007a3d","#ffffff"],
+  "New Zealand":["#000000","#ffffff"],
+  "Cape Verde": ["#003893","#cf2027"],
+  "Uzbekistan": ["#1eb53a","#ffffff"],
+  "Curaçao":    ["#002b7f","#f9e814"],
+  "Haiti":      ["#00209f","#d21034"],
+  "Congo DR":   ["#007fff","#f7d618"]
+};
 
 let numPlayers=9, playerNames=Array.from({length:9},(_,i)=>'Player '+(i+1));
 let buyIn=10, POTS=[], BONUS=[];
@@ -646,54 +741,145 @@ function updatePotStatus(){
 /* WHEEL */
 function getBg(){ return isDark()?'#161b22':'#f0f8ff'; }
 
+// Lighten a hex colour by mixing with white
+function lightenHex(hex, amt){
+  let c=parseInt(hex.slice(1),16);
+  let r=Math.min(255,((c>>16)&255)+amt), g=Math.min(255,((c>>8)&255)+amt), b=Math.min(255,(c&255)+amt);
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function hexToRgba(hex,alpha){
+  const c=parseInt(hex.slice(1),16);
+  return `rgba(${(c>>16)&255},${(c>>8)&255},${c&255},${alpha})`;
+}
+// Pick readable text colour (white or dark) against a bg
+function readable(hex){
+  const c=parseInt(hex.slice(1),16);
+  const r=(c>>16)&255,g=(c>>8)&255,b=c&255;
+  const lum=(0.299*r+0.587*g+0.114*b)/255;
+  return lum>0.55?'#1a1a2e':'#ffffff';
+}
+
 function drawWheel(items,isBonus){
   const canvas=document.getElementById('wheel'); if(!canvas)return;
   const ctx=canvas.getContext('2d');
-  const W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,r=W/2-6;
+  const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2, r=W/2-10;
   ctx.clearRect(0,0,W,H);
+
   if(!items||items.length===0){
     ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI);
     ctx.fillStyle=getBg(); ctx.fill();
-    ctx.strokeStyle='rgba(0,119,200,0.2)'; ctx.lineWidth=2; ctx.stroke();
-    ctx.fillStyle='rgba(0,119,200,0.5)'; ctx.font='14px DM Sans,sans-serif';
+    ctx.strokeStyle='rgba(0,119,200,0.2)'; ctx.lineWidth=3; ctx.stroke();
+    ctx.fillStyle='rgba(0,119,200,0.6)';
+    ctx.font='bold 28px Barlow Condensed,sans-serif';
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.fillText(items&&items.length===0?'✓ All done!':'Select a player',cx,cy);
     return;
   }
+
   const slice=(2*Math.PI)/items.length;
-  const potIdx=bonusMode?0:Math.min(getCurrentPot(),WC.length-1);
   const dark=isDark();
+
   items.forEach((item,i)=>{
     const start=angle+i*slice, end=start+slice;
-    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,end); ctx.closePath();
+    // Get segment colour
+    let segCol, strokeCol, textCol;
     if(isBonus){
-      ctx.fillStyle=i%2===0?'rgba(255,204,0,.22)':'rgba(255,204,0,.10)';
+      segCol=i%2===0?'rgba(255,204,0,.35)':'rgba(255,204,0,.18)';
+      textCol=dark?'#ffd740':'#7a5800';
+      strokeCol='rgba(255,204,0,0.4)';
+    } else if(typeof item==='string'){
+      // player names in bonus player-pick wheel
+      const potIdx=0;
+      segCol=i%2===0?(dark?WBD[i%WBD.length]:WB[i%WB.length]):(dark?'rgba(255,255,255,.05)':'rgba(240,240,240,.4)');
+      textCol=WC[i%WC.length];
+      strokeCol='rgba(255,255,255,0.5)';
     } else {
-      ctx.fillStyle=i%2===0?(dark?WBD[potIdx%WBD.length]:WB[potIdx%WB.length]):(dark?'rgba(255,255,255,.05)':'rgba(240,240,240,.5)');
+      // team: use national colours
+      const tc=TEAM_COLORS[item.n];
+      const primary=tc?tc[0]:'#0077c8';
+      const secondary=tc?tc[1]:'#ffffff';
+      // alternate primary and a lighter tint for adjacent segments
+      segCol = i%2===0 ? primary : lightenHex(primary, dark?-10:60);
+      textCol = readable(segCol);
+      strokeCol='rgba(255,255,255,0.6)';
     }
-    ctx.fill();
-    ctx.strokeStyle=dark?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.85)'; ctx.lineWidth=0.8; ctx.stroke();
-    ctx.save(); ctx.translate(cx,cy); ctx.rotate(start+slice/2);
+
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,end); ctx.closePath();
+    ctx.fillStyle=segCol; ctx.fill();
+    ctx.strokeStyle=strokeCol; ctx.lineWidth=1.5; ctx.stroke();
+
+    // Text — NO emoji in canvas (blurs on mobile). Just country name.
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(start+slice/2);
     ctx.textAlign='right';
-    ctx.fillStyle=isBonus?(dark?'#ffd740':'#8b6914'):WC[potIdx%WC.length];
-    const fs=Math.max(9,Math.min(12,160/items.length));
-    ctx.font=`600 ${fs}px DM Sans,sans-serif`;
-    // For teams show flag + name, for players just name
-    const label=isBonus?item:(flag(item.n)+' '+(item.n.length>10?item.n.slice(0,10)+'…':item.n));
-    ctx.fillText(typeof item==='string'?item:label, r-10, 4);
+    ctx.fillStyle=textCol;
+
+    const name = typeof item==='string' ? item : item.n;
+    const maxChars = items.length<=6?14:items.length<=9?11:9;
+    const label = name.length>maxChars ? name.slice(0,maxChars-1)+'…' : name;
+
+    // Font size scales with number of items
+    const fs = Math.max(16, Math.min(26, Math.floor(420/items.length)));
+    ctx.font=`700 ${fs}px Barlow Condensed,sans-serif`;
+    ctx.shadowColor='rgba(0,0,0,0.35)';
+    ctx.shadowBlur=4;
+    ctx.fillText(label, r-22, fs*0.38);
+    ctx.shadowBlur=0;
     ctx.restore();
   });
-  // hub
-  ctx.beginPath(); ctx.arc(cx,cy,20,0,2*Math.PI);
-  ctx.fillStyle=dark?'#0d1117':'#ffffff'; ctx.fill();
-  ctx.strokeStyle='rgba(128,128,128,0.2)'; ctx.lineWidth=1; ctx.stroke();
-  // arrow
-  ctx.fillStyle=isBonus?(dark?'#ffd740':'#b8860b'):WC[potIdx%WC.length];
-  ctx.beginPath(); ctx.moveTo(cx+r,cy); ctx.lineTo(cx+r-24,cy-10); ctx.lineTo(cx+r-24,cy+10); ctx.closePath(); ctx.fill();
-  // outer ring
+
+  // Outer decorative ring
   ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI);
-  ctx.strokeStyle=isBonus?'rgba(255,204,0,.5)':WC[potIdx%WC.length]+'55';
-  ctx.lineWidth=2; ctx.stroke();
+  ctx.strokeStyle=isBonus?'rgba(255,204,0,.6)':'rgba(255,255,255,0.3)';
+  ctx.lineWidth=4; ctx.stroke();
+
+  // Inner shadow ring
+  const grad=ctx.createRadialGradient(cx,cy,r-20,cx,cy,r);
+  grad.addColorStop(0,'transparent');
+  grad.addColorStop(1,'rgba(0,0,0,0.12)');
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI);
+  ctx.fillStyle=grad; ctx.fill();
+
+  // Centre hub
+  ctx.beginPath(); ctx.arc(cx,cy,36,0,2*Math.PI);
+  const hubGrad=ctx.createRadialGradient(cx-8,cy-8,2,cx,cy,36);
+  hubGrad.addColorStop(0,dark?'#30363d':'#ffffff');
+  hubGrad.addColorStop(1,dark?'#21262d':'#e8e8e8');
+  ctx.fillStyle=hubGrad; ctx.fill();
+  ctx.strokeStyle=dark?'rgba(255,255,255,0.15)':'rgba(0,0,0,0.12)'; ctx.lineWidth=2; ctx.stroke();
+
+  // Arrow pointer (pointing right = 3 o'clock position)
+  const potIdx=bonusMode?0:Math.min(getCurrentPot(),WC.length-1);
+  const arrowCol=isBonus?(dark?'#ffd740':'#b8860b'):WC[potIdx%WC.length];
+  ctx.fillStyle=arrowCol;
+  ctx.beginPath();
+  ctx.moveTo(cx+r+10, cy);
+  ctx.lineTo(cx+r-18, cy-14);
+  ctx.lineTo(cx+r-18, cy+14);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=1; ctx.stroke();
+  // Render emoji flags as HTML overlay (sharp on mobile)
+  renderFlagOverlay(items, isBonus);
+}
+
+/* FLAG OVERLAY — rendered as HTML on top of canvas so emoji stay sharp on mobile */
+function renderFlagOverlay(items, isBonus){
+  const overlay=document.getElementById('wheelFlags'); if(!overlay)return;
+  if(!items||items.length===0||isBonus||items.some(i=>typeof i==='string')){
+    overlay.innerHTML=''; return;
+  }
+  const size=300, cx=size/2, cy=size/2, r=size/2-10;
+  const slice=(2*Math.PI)/items.length;
+  overlay.innerHTML = items.map((item,i)=>{
+    const mid=angle+i*slice+slice/2;
+    // Place flag at ~65% radius from centre
+    const fr=r*0.65;
+    const x=cx+fr*Math.cos(mid);
+    const y=cy+fr*Math.sin(mid);
+    const fs=items.length<=6?20:items.length<=9?16:13;
+    return `<div style="position:absolute;left:${x}px;top:${y}px;transform:translate(-50%,-50%);font-size:${fs}px;line-height:1;pointer-events:none;">${flag(item.n)}</div>`;
+  }).join('');
 }
 
 /* SPIN */
@@ -712,6 +898,9 @@ function doSpin(items,isBonus,onLand){
     const elapsed=ts-start, prog=Math.min(elapsed/duration,1);
     const eased=1-Math.pow(1-prog,4);
     angle=eased*totalAngle;
+    // Rotate flag overlay to match wheel
+    const ov=document.getElementById('wheelFlags');
+    if(ov) ov.style.transform=`rotate(${angle}rad)`;
     // tick sound
     const norm=((2*Math.PI-(angle%(2*Math.PI)))+2*Math.PI)%(2*Math.PI);
     const curSlice=Math.floor(norm/slice)%items.length;
@@ -722,6 +911,8 @@ function doSpin(items,isBonus,onLand){
       spinning=false;
       document.getElementById('spinBtn').disabled=false;
       document.getElementById('bonusBtn').disabled=false;
+      const ov=document.getElementById('wheelFlags');
+      if(ov) ov.style.transform=`rotate(${angle}rad)`;
       const norm2=((2*Math.PI-(angle%(2*Math.PI)))+2*Math.PI)%(2*Math.PI);
       playLandSound();
       onLand(items[Math.floor(norm2/slice)%items.length]);
@@ -815,8 +1006,8 @@ function checkBonusReady(){
 
 function setResult(team,main,sub){
   const nt=document.getElementById('resultTeam'),nm=document.getElementById('resultMeta');
-  if(team){ nt.textContent=team; nt.style.fontFamily="'Bebas Neue',sans-serif"; nt.style.fontSize='26px'; nt.style.color='var(--text)'; }
-  else{ nt.textContent=main; nt.style.fontFamily="'DM Sans',sans-serif"; nt.style.fontSize='14px'; nt.style.color='var(--muted)'; }
+  if(team){ nt.textContent=team; nt.style.fontFamily="'Barlow Condensed',sans-serif"; nt.style.fontSize='26px'; nt.style.color='var(--text)'; }
+  else{ nt.textContent=main; nt.style.fontFamily="'Barlow',sans-serif"; nt.style.fontSize='14px'; nt.style.color='var(--muted)'; }
   nm.textContent=team?main+(sub?' · '+sub:''):(sub||'');
 }
 
@@ -835,6 +1026,8 @@ function renderAllocations(){
 function resetDraw(){
   if(animFrame)cancelAnimationFrame(animFrame);
   init(); renderPlayers(); renderAllocations(); updatePotStatus();
+  const ovr=document.getElementById('wheelFlags');
+  if(ovr){ovr.innerHTML='';ovr.style.transform='';}
   drawWheel([],false); setResult(null,'Select a player, then spin','');
   document.getElementById('resultCard').className='result-card';
   document.getElementById('spinBtn').disabled=false; document.getElementById('spinBtn').style.display='inline-block';
