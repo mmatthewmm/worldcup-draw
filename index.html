@@ -297,10 +297,6 @@ canvas#wheel { display:block; max-width:100%; }
   </div>
   <div class="header-sub" id="headerSub">Draw · winner takes all</div>
   <div style="margin-top:14px;">
-    <a href="predictor.html" style="display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:var(--red);color:#fff;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;box-shadow:0 2px 10px rgba(232,35,58,0.3);transition:all .18s;" onmouseover="this.style.background='#ff4455'" onmouseout="this.style.background='var(--red)'">
-      🏆 Bracket Predictor →
-    </a>
-  </div>
 </header>
 
 <!-- HOW TO PLAY -->
@@ -325,7 +321,7 @@ canvas#wheel { display:block; max-width:100%; }
     </div>
     <div class="htp-step">
       <div class="htp-num">5</div>
-      <div class="htp-text"><strong>Earn points all tournament</strong>Your teams earn points throughout the World Cup — for winning their group, advancing in the knockouts, and ultimately winning the whole thing. Most points wins the prize pool. Check the <strong>Leaderboard</strong> tab to see standings in real time.</div>
+      <div class="htp-text"><strong>Earn points all tournament</strong> — your teams earn points throughout the World Cup for winning their group, advancing in the knockouts, and ultimately winning the whole thing. Most points at the end wins the prize pool. Check the Leaderboard tab to see standings in real time.</div>
     </div>
   </div>
 </div>
@@ -362,8 +358,8 @@ canvas#wheel { display:block; max-width:100%; }
 <div class="tabs">
   <button class="tab active" onclick="showTab('pots')">Pots</button>
   <button class="tab" onclick="showTab('draw')">Draw</button>
-  <button class="tab" onclick="showTab('results')">Results</button>
-  <button class="tab" onclick="showTab('leaderboard')">🏆 Leaderboard</button>
+  <button class="tab" onclick="showTab('results')">Team Allocation</button>
+  <button class="tab" onclick="showTab('leaderboard')">Leaderboard</button>
 </div>
 
 <!-- POTS -->
@@ -457,7 +453,7 @@ canvas#wheel { display:block; max-width:100%; }
     <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Points System</div>
     <div style="display:flex;flex-wrap:wrap;gap:7px;">
       <span class="pts-pill" style="background:rgba(255,204,0,.15);color:#8b6914;border:1px solid rgba(255,204,0,.4)">🥇 Group winner: 5pts</span>
-      <span class="pts-pill" style="background:rgba(0,119,200,.1);color:var(--sky);border:1px solid rgba(0,119,200,.3)">🥈 Runner-up: 3pts</span>
+      <span class="pts-pill" style="background:rgba(0,119,200,.1);color:var(--sky);border:1px solid rgba(0,119,200,.3)">🥈 Group runner-up: 3pts</span>
       <span class="pts-pill" style="background:rgba(0,166,81,.1);color:var(--green);border:1px solid rgba(0,166,81,.3)">🟡 Best 3rd: 2pts</span>
       <span class="pts-pill" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">R32 win: 5pts</span>
       <span class="pts-pill" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)">R16 win: 8pts</span>
@@ -468,10 +464,12 @@ canvas#wheel { display:block; max-width:100%; }
     </div>
   </div>
 
+  <div style="background:rgba(255,204,0,.12);border:1px solid rgba(255,204,0,.4);border-radius:10px;padding:11px 16px;margin-bottom:16px;font-size:12px;color:#7a5800;line-height:1.5;">
+    <strong>📱 Note:</strong> The leaderboard is saved on your device via the Admin panel. Share your screen or device for others to see live standings.
+  </div>
+
   <div id="lbContent" style="text-align:center;padding:40px;color:var(--muted);font-size:14px;">Loading...</div>
 </div>
-
-<!-- ADMIN MODAL OVERLAY -->
 <div id="adminOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:500;overflow-y:auto;padding:20px;">
   <div style="background:var(--surface);border-radius:16px;max-width:700px;margin:0 auto;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,0.3);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
@@ -1144,10 +1142,16 @@ const PTS = {
   wc_winner: 30
 };
 
-/* --- STORAGE HELPERS --- */
-async function lbSave(key,val){ try{ await window.storage.set(key,JSON.stringify(val),true); }catch(e){} }
-async function lbLoad(key){ try{ const r=await window.storage.get(key,true); if(r&&r.value)return JSON.parse(r.value); }catch(e){} return null; }
-async function lbDel(key){ try{ await window.storage.delete(key,true); }catch(e){} }
+/* --- STORAGE HELPERS (localStorage — works on GitHub Pages) --- */
+async function lbSave(key,val){
+  try{ localStorage.setItem('wc26_'+key, JSON.stringify(val)); }catch(e){ console.error(e); }
+}
+async function lbLoad(key){
+  try{ const v=localStorage.getItem('wc26_'+key); return v?JSON.parse(v):null; }catch(e){ return null; }
+}
+async function lbDel(key){
+  try{ localStorage.removeItem('wc26_'+key); }catch(e){}
+}
 
 /* Simple hash for admin password */
 function pwHash(s){ let h=5381; for(let i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i); return(h>>>0).toString(36); }
