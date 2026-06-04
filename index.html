@@ -1247,53 +1247,109 @@ async function loadLeaderboard(){
 
 /* --- ADMIN MODAL --- */
 let adminAuthed=false;
-function openAdmin(){ document.getElementById('adminOverlay').style.display='block'; renderAdminContent(); }
-function closeAdmin(){ document.getElementById('adminOverlay').style.display='none'; }
+
+function openAdmin(){
+  document.getElementById('adminOverlay').style.display='block';
+  document.body.style.overflow='hidden';
+  renderAdminContent();
+}
+
+function closeAdmin(){
+  document.getElementById('adminOverlay').style.display='none';
+  document.body.style.overflow='';
+}
 
 async function renderAdminContent(){
   const el=document.getElementById('adminContent');
-  const pwData=await lbLoad('lb_admin_pw');
-  if(!pwData){ renderAdminSetup(el); return; }
-  if(!adminAuthed){ renderAdminLogin(el); return; }
-  renderAdminPanel(el);
+  if(!el) return;
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">Loading...</div>';
+  const pwData = await lbLoad('lb_admin_pw');
+  if(!pwData){
+    renderAdminSetup(el);
+  } else if(!adminAuthed){
+    renderAdminLogin(el);
+  } else {
+    renderAdminPanel(el);
+  }
 }
 
 function renderAdminSetup(el){
   el.innerHTML=`
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">First time setup — set your admin password. You'll use this to enter match results throughout the tournament.</div>
-    <input class="admin-input" id="ap1" type="password" placeholder="Choose a password (min 4 characters)...">
-    <input class="admin-input" id="ap2" type="password" placeholder="Confirm password...">
-    <div id="apErr" style="font-size:12px;color:var(--red);margin-bottom:8px;display:none"></div>
-    <button class="admin-btn admin-btn-sky" onclick="doSetPassword()">Set Password →</button>`;
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+      First time setup — choose your admin password. You will use this to enter match results throughout the tournament.
+    </p>
+    <input style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px;display:block;font-family:'Barlow',sans-serif;"
+      id="ap1" type="password" placeholder="Choose a password (min 4 characters)...">
+    <input style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;display:block;font-family:'Barlow',sans-serif;"
+      id="ap2" type="password" placeholder="Confirm password...">
+    <div id="apErr" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
+    <button onclick="doSetPassword()"
+      style="padding:11px 24px;background:var(--sky);color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;width:100%;">
+      Set Password →
+    </button>`;
 }
+
 async function doSetPassword(){
-  const p1=document.getElementById('ap1').value, p2=document.getElementById('ap2').value;
-  const err=document.getElementById('apErr');
-  if(p1.length<4){err.style.display='block';err.textContent='Password must be at least 4 characters.';return;}
-  if(p1!==p2){err.style.display='block';err.textContent='Passwords do not match.';return;}
-  await lbSave('lb_admin_pw',{hash:pwHash(p1)});
-  adminAuthed=true; renderAdminPanel(document.getElementById('adminContent'));
+  const p1 = document.getElementById('ap1') ? document.getElementById('ap1').value : '';
+  const p2 = document.getElementById('ap2') ? document.getElementById('ap2').value : '';
+  const err = document.getElementById('apErr');
+  if(!p1 || p1.length < 4){
+    if(err){ err.style.display='block'; err.textContent='Password must be at least 4 characters.'; }
+    return;
+  }
+  if(p1 !== p2){
+    if(err){ err.style.display='block'; err.textContent='Passwords do not match.'; }
+    return;
+  }
+  await lbSave('lb_admin_pw', {hash: pwHash(p1)});
+  adminAuthed = true;
+  renderAdminPanel(document.getElementById('adminContent'));
 }
 
 function renderAdminLogin(el){
   el.innerHTML=`
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Enter your admin password to manage players and results.</div>
-    <input class="admin-input" id="alPw" type="password" placeholder="Admin password..." onkeydown="if(event.key==='Enter')doAdminLogin()">
-    <div id="alErr" style="font-size:12px;color:var(--red);margin-bottom:8px;display:none"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="admin-btn admin-btn-sky" onclick="doAdminLogin()">Login →</button>
-      <button class="admin-btn admin-btn-outline" onclick="resetAdminPw()">Reset Password</button>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Enter your admin password to manage players and results.</p>
+    <input style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;display:block;font-family:'Barlow',sans-serif;"
+      id="alPw" type="password" placeholder="Admin password..."
+      onkeydown="if(event.key==='Enter') doAdminLogin()">
+    <div id="alErr" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="doAdminLogin()"
+        style="flex:1;padding:11px 0;background:var(--sky);color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;">
+        Login →
+      </button>
+      <button onclick="resetAdminPw()"
+        style="padding:11px 18px;background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
+        Reset Password
+      </button>
     </div>`;
 }
+
 async function doAdminLogin(){
-  const pw=document.getElementById('alPw').value;
-  const pwData=await lbLoad('lb_admin_pw');
-  if(pwHash(pw)===pwData.hash){ adminAuthed=true; renderAdminPanel(document.getElementById('adminContent')); }
-  else{ const e=document.getElementById('alErr'); e.style.display='block'; e.textContent='Incorrect password.'; }
+  const pwEl = document.getElementById('alPw');
+  const errEl = document.getElementById('alErr');
+  if(!pwEl) return;
+  const pw = pwEl.value;
+  const pwData = await lbLoad('lb_admin_pw');
+  if(!pwData){
+    if(errEl){ errEl.style.display='block'; errEl.textContent='No password set. Please refresh and set one.'; }
+    return;
+  }
+  if(pwHash(pw) === pwData.hash){
+    adminAuthed = true;
+    renderAdminPanel(document.getElementById('adminContent'));
+  } else {
+    if(errEl){ errEl.style.display='block'; errEl.textContent='Incorrect password. Try again.'; }
+    pwEl.value = '';
+    pwEl.focus();
+  }
 }
+
 async function resetAdminPw(){
-  if(!confirm('Reset admin password? Anyone will be able to set a new one.'))return;
-  await lbDel('lb_admin_pw'); adminAuthed=false; renderAdminSetup(document.getElementById('adminContent'));
+  if(!confirm('Reset admin password? Anyone will be able to set a new one.')) return;
+  await lbDel('lb_admin_pw');
+  adminAuthed = false;
+  renderAdminSetup(document.getElementById('adminContent'));
 }
 
 async function renderAdminPanel(el){
