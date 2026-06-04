@@ -454,7 +454,7 @@ canvas#wheel { display:block; max-width:100%; }
       <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">QF win: 12pts</span>
       <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">SF win: 18pts</span>
       <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(232,35,58,.1);color:var(--red);border:1px solid rgba(232,35,58,.3);">3rd place win: 10pts</span>
-      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(232,35,58,.15);color:var(--red);border:1px solid rgba(232,35,58,.4);">WC Winner: 30pts</span>
+      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(232,35,58,.15);color:var(--red);border:1px solid rgba(232,35,58,.4);">WC Winner: 15pts</span>
     </div>
   </div>
 
@@ -1247,7 +1247,7 @@ var ALL_WC_TEAMS = (function(){
   return t.sort();
 })();
 
-var LB_PTS = {gw:5,gr:3,g3:2,r32:5,r16:8,qf:12,sf:18,third:10,win:30};
+var LB_PTS = {gw:5,gr:3,g3:2,r32:5,r16:8,qf:12,sf:18,third:10,win:15};
 
 function lbSet(k,v){try{localStorage.setItem('wc26_'+k,JSON.stringify(v));}catch(e){}}
 function lbGet(k){try{var s=localStorage.getItem('wc26_'+k);return s?JSON.parse(s):null;}catch(e){return null;}}
