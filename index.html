@@ -132,13 +132,14 @@ header { text-align:center; padding:44px 0 32px; border-bottom:2px solid var(--h
 .pot-sum { font-size:13px; color:var(--muted); }
 
 /* ===== TABS ===== */
-.tabs { display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:5px; margin-bottom:32px; box-shadow:var(--shadow); }
-.tab { flex:1; padding:11px 0; font-family:'Barlow',sans-serif; font-size:14px; font-weight:500; background:none; border:none; border-radius:10px; color:var(--muted); cursor:pointer; transition:all .2s; }
+.tabs { display:flex; gap:3px; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:4px; margin-bottom:32px; box-shadow:var(--shadow); flex-wrap:nowrap; }
+.tab { flex:1; min-width:0; padding:10px 2px; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:600; background:none; border:none; border-radius:9px; color:var(--muted); cursor:pointer; transition:all .2s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.01em; }
 .tab:hover:not(.active) { color:var(--text); background:var(--surface2); }
-.tab.active { color:#fff; font-weight:600; }
+.tab.active { color:#fff; }
 .tab:nth-child(1).active { background:var(--sky); }
 .tab:nth-child(2).active { background:var(--red); }
 .tab:nth-child(3).active { background:var(--green); }
+.tab:nth-child(4).active { background:#7b2ff7; }
 .section { display:none; } .section.show { display:block; }
 
 /* ===== POTS ===== */
@@ -1405,7 +1406,9 @@ function saveKnockout(){
   lbSave('lb_results',results); alert('Knockout results saved!'); loadLeaderboard();
 }
 
-
+// Boot
+buildPots(); init(); renderNameInputs(); updatePotSummary(); updatePrize();
+renderPotsTab(); renderAllocations(); drawWheel([],false); updateHeaderSub();
 </script>
 </body>
 </html>
