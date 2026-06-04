@@ -1113,7 +1113,7 @@ function showTab(id){
 buildPots(); init(); renderNameInputs(); updatePotSummary(); updatePrize();
 renderPotsTab(); renderAllocations(); drawWheel([],false); updateHeaderSub();
 
-/* --- CONFIRMED WC2026 GROUPS (ESPN / Yahoo Sports verified) --- */
+/* --- WC2026 GROUPS (confirmed ESPN/Yahoo Sports June 2026) --- */
 const WC_GROUPS = {
   A:['Mexico','South Africa','South Korea','Czechia'],
   B:['Canada','Bosnia','Qatar','Switzerland'],
@@ -1129,424 +1129,409 @@ const WC_GROUPS = {
   L:['England','Croatia','Ghana','Panama']
 };
 
-/* Points awarded per achievement */
-const PTS = {
-  group_winner: 5,
-  group_runner_up: 3,
-  group_best_third: 2,
-  r32_win: 5,
-  r16_win: 8,
-  qf_win: 12,
-  sf_win: 18,
-  third_place_win: 10,
-  wc_winner: 30
-};
+/* --- POINTS --- */
+const PTS = { group_winner:5, group_runner_up:3, group_best_third:2,
+  r32:5, r16:8, qf:12, sf:18, third_place:10, winner:30 };
 
-/* --- STORAGE HELPERS (localStorage — works on GitHub Pages) --- */
-async function lbSave(key,val){
-  try{ localStorage.setItem('wc26_'+key, JSON.stringify(val)); }catch(e){ console.error(e); }
+/* --- STORAGE (synchronous localStorage, no async needed) --- */
+function lbSave(key, val){
+  try{ localStorage.setItem('wc26_'+key, JSON.stringify(val)); return true; }
+  catch(e){ console.error('lbSave',e); return false; }
 }
-async function lbLoad(key){
-  try{ const v=localStorage.getItem('wc26_'+key); return v?JSON.parse(v):null; }catch(e){ return null; }
+function lbLoad(key){
+  try{ const v = localStorage.getItem('wc26_'+key); return v ? JSON.parse(v) : null; }
+  catch(e){ return null; }
 }
-async function lbDel(key){
-  try{ localStorage.removeItem('wc26_'+key); }catch(e){}
+function lbDel(key){
+  try{ localStorage.removeItem('wc26_'+key); } catch(e){}
 }
 
-/* Simple hash for admin password */
-function pwHash(s){ let h=5381; for(let i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i); return(h>>>0).toString(36); }
+/* --- SIMPLE PASSWORD HASH --- */
+function pwHash(s){
+  let h=5381;
+  for(let i=0;i<s.length;i++) h=((h<<5)+h)+s.charCodeAt(i);
+  return (h>>>0).toString(36);
+}
 
-/* --- COMPUTE SCORE FOR ONE PLAYER --- */
-function computePlayerScore(playerTeams, results){
-  if(!playerTeams||!playerTeams.length) return {total:0,breakdown:{}};
-  const bd={};
-  let total=0;
-  function add(team,reason,pts){
-    if(!bd[team])bd[team]={pts:0,reasons:[]};
-    bd[team].pts+=pts; bd[team].reasons.push(reason); total+=pts;
+/* --- SCORE ENGINE --- */
+function computeScore(playerTeams, results){
+  if(!playerTeams || !playerTeams.length || !results) return {total:0, breakdown:{}};
+  const bd = {};
+  let total = 0;
+  function add(team, reason, pts){
+    if(!bd[team]) bd[team]={pts:0,reasons:[]};
+    bd[team].pts += pts; bd[team].reasons.push(reason); total += pts;
   }
-  // Group stage
+  // Groups
   if(results.groups){
     Object.keys(results.groups).forEach(g=>{
-      const r=results.groups[g]; // {winner,runnerUp,bestThird:[...]}
-      if(!r)return;
-      playerTeams.forEach(team=>{
-        if(r.winner&&r.winner===team) add(team,'Group winner',PTS.group_winner);
-        else if(r.runnerUp&&r.runnerUp===team) add(team,'Runner-up',PTS.group_runner_up);
-        else if(r.bestThird&&r.bestThird.includes(team)) add(team,'Best 3rd',PTS.group_best_third);
+      const r = results.groups[g];
+      if(!r) return;
+      playerTeams.forEach(t=>{
+        if(r.winner && r.winner===t) add(t,'Group winner',PTS.group_winner);
+        else if(r.runnerUp && r.runnerUp===t) add(t,'Group runner-up',PTS.group_runner_up);
+        else if(r.bestThird && r.bestThird===t) add(t,'Best 3rd place',PTS.group_best_third);
       });
     });
   }
-  // Knockout rounds
-  const koMap={r32:'r32_win',r16:'r16_win',qf:'qf_win',sf:'sf_win'};
+  // Knockouts
   if(results.knockout){
-    Object.keys(koMap).forEach(round=>{
-      if(!results.knockout[round])return;
+    ['r32','r16','qf','sf'].forEach(round=>{
+      if(!results.knockout[round]) return;
       results.knockout[round].forEach(winner=>{
-        if(playerTeams.includes(winner)) add(winner,round.toUpperCase()+' win',PTS[koMap[round]]);
+        if(winner && playerTeams.includes(winner)) add(winner, round.toUpperCase()+' win', PTS[round]);
       });
     });
-    if(results.knockout.thirdPlace) playerTeams.forEach(t=>{ if(results.knockout.thirdPlace===t) add(t,'3rd place win',PTS.third_place_win); });
-    if(results.knockout.winner) playerTeams.forEach(t=>{ if(results.knockout.winner===t) add(t,'WC Winner!',PTS.wc_winner); });
+    if(results.knockout.thirdPlace) playerTeams.forEach(t=>{ if(results.knockout.thirdPlace===t) add(t,'3rd place',PTS.third_place); });
+    if(results.knockout.winner) playerTeams.forEach(t=>{ if(results.knockout.winner===t) add(t,'WC Winner 🏆',PTS.winner); });
   }
-  return {total,breakdown:bd};
+  return {total, breakdown:bd};
 }
 
-/* --- LOAD & RENDER LEADERBOARD --- */
-async function loadLeaderboard(){
-  const el=document.getElementById('lbContent');
-  if(!el)return;
-  el.innerHTML='<div style="text-align:center;padding:40px;color:var(--muted)">Loading...</div>';
+/* --- LEADERBOARD --- */
+function loadLeaderboard(){
+  const el = document.getElementById('lbContent');
+  const metaEl = document.getElementById('lbMeta');
+  if(!el) return;
   try{
-    const data=await lbLoad('lb_players');
-    const results=await lbLoad('lb_results')||{};
-    const meta=await lbLoad('lb_meta')||{};
-    const players=data||[];
-    // Compute scores
-    const scored=players.map(p=>({...p,score:computePlayerScore(p.teams,results)}));
-    scored.sort((a,b)=>b.score.total-a.score.total);
-    // Update meta
-    document.getElementById('lbMeta').textContent=`${players.length} player${players.length!==1?'s':''} · ${meta.stage||'Group stage ongoing'} · Tap ↻ to refresh`;
+    const players = lbLoad('lb_players') || [];
+    const results = lbLoad('lb_results') || {};
+    const meta = lbLoad('lb_meta') || {};
+    if(metaEl) metaEl.textContent = players.length+' player'+(players.length!==1?'s':'')+' · '+(meta.stage||'Group stage ongoing');
     if(!players.length){
-      el.innerHTML=`<div style="text-align:center;padding:48px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;">
-        <div style="font-size:40px;margin-bottom:12px">🏆</div>
-        <div style="font-size:16px;font-weight:600;margin-bottom:8px">No players yet</div>
-        <div style="font-size:13px;color:var(--muted)">The admin needs to set up players and their teams after the draw is complete.</div>
-      </div>`; return;
+      el.innerHTML = `<div style="text-align:center;padding:40px 20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;">
+        <div style="font-size:36px;margin-bottom:10px">⚽</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">No players yet</div>
+        <div style="font-size:13px;color:var(--muted)">Open the Admin panel to add players and their teams after the draw.</div>
+      </div>`;
+      return;
     }
-    let html='<div class="lb-wrap">';
+    const scored = players.map(p=>({...p, score: computeScore(p.teams||[], results)}));
+    scored.sort((a,b)=>b.score.total - a.score.total);
+    let html = '<div class="lb-wrap">';
     scored.forEach((p,i)=>{
-      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-      const rankClass=i===0?'r1':i===1?'r2':i===2?'r3':'';
-      const teamChips=(p.teams||[]).map(t=>{
-        const teamScore=p.score.breakdown[t];
-        const hasPts=teamScore&&teamScore.pts>0;
-        return `<span style="font-size:11px;padding:2px 7px;border-radius:5px;${hasPts?'background:rgba(0,166,81,.12);border:1px solid rgba(0,166,81,.3);color:var(--green)':'background:var(--surface2);border:1px solid var(--border);color:var(--text)'}">${fl(t)} ${t}${hasPts?` +${teamScore.pts}`:''}</span>`;
+      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      const rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
+      const chips = (p.teams||[]).map(t=>{
+        const ts = p.score.breakdown[t];
+        const has = ts && ts.pts>0;
+        return `<span style="font-size:11px;padding:2px 7px;border-radius:5px;margin:1px;display:inline-block;
+          ${has?'background:rgba(0,166,81,.12);border:1px solid rgba(0,166,81,.3);color:var(--green)':'background:var(--surface2);border:1px solid var(--border);color:var(--text)'}">
+          ${fl(t)} ${t}${has?' +'+ts.pts+'pts':''}
+        </span>`;
       }).join('');
-      const breakdown=Object.entries(p.score.breakdown).map(([t,d])=>`${t}: ${d.pts}pts (${d.reasons.join(', ')})`).join(' · ')||'No points yet';
-      html+=`<div class="lb-row">
-        <div class="lb-rank-num ${rankClass}">${medal||(i+1)}</div>
+      const bkd = Object.entries(p.score.breakdown).map(([t,d])=>t+': '+d.pts+'pts').join(' · ') || 'No points yet';
+      html += `<div class="lb-row">
+        <div class="lb-rank-num ${rc}">${medal||(i+1)}</div>
         <div style="flex:1;min-width:0">
-          <div class="lb-player-name">${esc(p.name)}</div>
-          <div class="lb-player-teams" style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">${teamChips}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px">${breakdown}</div>
+          <div class="lb-player-name">${esc(p.name||'')}</div>
+          <div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:2px">${chips}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">${esc(bkd)}</div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
+        <div style="text-align:right;flex-shrink:0;padding-left:12px">
           <div class="lb-score">${p.score.total}</div>
           <div class="lb-score-label">pts</div>
         </div>
       </div>`;
     });
-    html+='</div>';
-    el.innerHTML=html;
+    html += '</div>';
+    el.innerHTML = html;
   } catch(e){
-    el.innerHTML=`<div style="color:var(--red);padding:16px;text-align:center">Error loading leaderboard. Please refresh.</div>`;
-    console.error(e);
+    console.error('loadLeaderboard error:', e);
+    if(el) el.innerHTML = '<div style="color:var(--red);padding:16px;text-align:center">Error loading leaderboard: '+e.message+'</div>';
   }
 }
 
-/* --- ADMIN MODAL --- */
-let adminAuthed=false;
+/* --- ADMIN --- */
+let adminAuthed = false;
 
 function openAdmin(){
-  document.getElementById('adminOverlay').style.display='block';
-  document.body.style.overflow='hidden';
-  renderAdminContent();
+  const overlay = document.getElementById('adminOverlay');
+  if(overlay){ overlay.style.display='block'; document.body.style.overflow='hidden'; }
+  renderAdminGate();
 }
-
 function closeAdmin(){
-  document.getElementById('adminOverlay').style.display='none';
-  document.body.style.overflow='';
+  const overlay = document.getElementById('adminOverlay');
+  if(overlay){ overlay.style.display='none'; document.body.style.overflow=''; }
 }
 
-async function renderAdminContent(){
-  const el=document.getElementById('adminContent');
+function renderAdminGate(){
+  const el = document.getElementById('adminContent');
   if(!el) return;
-  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted)">Loading...</div>';
-  const pwData = await lbLoad('lb_admin_pw');
-  if(!pwData){
-    renderAdminSetup(el);
-  } else if(!adminAuthed){
-    renderAdminLogin(el);
-  } else {
-    renderAdminPanel(el);
-  }
+  const pw = lbLoad('lb_admin_pw');
+  if(!pw) renderSetupScreen(el);
+  else if(!adminAuthed) renderLoginScreen(el);
+  else renderAdminDashboard(el);
 }
 
-function renderAdminSetup(el){
-  el.innerHTML=`
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      First time setup — choose your admin password. You will use this to enter match results throughout the tournament.
+/* SETUP SCREEN */
+function renderSetupScreen(el){
+  el.innerHTML = `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5">
+      Welcome! Set your admin password — you'll use this to enter match results throughout the tournament.
     </p>
-    <input style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px;display:block;font-family:'Barlow',sans-serif;"
-      id="ap1" type="password" placeholder="Choose a password (min 4 characters)...">
-    <input style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;display:block;font-family:'Barlow',sans-serif;"
-      id="ap2" type="password" placeholder="Confirm password...">
-    <div id="apErr" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
-    <button onclick="doSetPassword()"
-      style="padding:11px 24px;background:var(--sky);color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;width:100%;">
+    <div style="margin-bottom:8px">
+      <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:4px">Password</label>
+      <input type="password" id="setup_p1" placeholder="At least 4 characters..."
+        style="width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;font-family:inherit">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:4px">Confirm Password</label>
+      <input type="password" id="setup_p2" placeholder="Repeat password..."
+        style="width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;font-family:inherit"
+        onkeydown="if(event.key==='Enter')adminSetPw()">
+    </div>
+    <div id="setup_err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
+    <button onclick="adminSetPw()"
+      style="width:100%;padding:12px;background:var(--sky);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">
       Set Password →
     </button>`;
 }
-
-async function doSetPassword(){
-  const p1 = document.getElementById('ap1') ? document.getElementById('ap1').value : '';
-  const p2 = document.getElementById('ap2') ? document.getElementById('ap2').value : '';
-  const err = document.getElementById('apErr');
-  if(!p1 || p1.length < 4){
-    if(err){ err.style.display='block'; err.textContent='Password must be at least 4 characters.'; }
-    return;
-  }
-  if(p1 !== p2){
-    if(err){ err.style.display='block'; err.textContent='Passwords do not match.'; }
-    return;
-  }
-  await lbSave('lb_admin_pw', {hash: pwHash(p1)});
+function adminSetPw(){
+  const p1 = (document.getElementById('setup_p1')||{}).value||'';
+  const p2 = (document.getElementById('setup_p2')||{}).value||'';
+  const err = document.getElementById('setup_err');
+  if(p1.length < 4){ if(err){err.style.display='block';err.textContent='Password must be at least 4 characters.';} return; }
+  if(p1 !== p2){ if(err){err.style.display='block';err.textContent='Passwords do not match.';} return; }
+  lbSave('lb_admin_pw', {hash: pwHash(p1)});
   adminAuthed = true;
-  renderAdminPanel(document.getElementById('adminContent'));
+  renderAdminDashboard(document.getElementById('adminContent'));
 }
 
-function renderAdminLogin(el){
-  el.innerHTML=`
-    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Enter your admin password to manage players and results.</p>
-    <input style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;display:block;font-family:'Barlow',sans-serif;"
-      id="alPw" type="password" placeholder="Admin password..."
-      onkeydown="if(event.key==='Enter') doAdminLogin()">
-    <div id="alErr" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none;"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="doAdminLogin()"
-        style="flex:1;padding:11px 0;background:var(--sky);color:#fff;border:none;border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;">
+/* LOGIN SCREEN */
+function renderLoginScreen(el){
+  el.innerHTML = `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Enter your admin password to manage players and results.</p>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:4px">Password</label>
+      <input type="password" id="login_pw" placeholder="Admin password..."
+        style="width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;font-family:inherit"
+        onkeydown="if(event.key==='Enter')adminLogin()">
+    </div>
+    <div id="login_err" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="adminLogin()"
+        style="flex:1;padding:12px;background:var(--sky);color:#fff;border:none;border-radius:9px;font-size:15px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">
         Login →
       </button>
-      <button onclick="resetAdminPw()"
-        style="padding:11px 18px;background:transparent;color:var(--text);border:1.5px solid var(--border);border-radius:9px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
-        Reset Password
+      <button onclick="adminResetPw()"
+        style="padding:12px 16px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:inherit">
+        Reset
       </button>
     </div>`;
 }
-
-async function doAdminLogin(){
-  const pwEl = document.getElementById('alPw');
-  const errEl = document.getElementById('alErr');
-  if(!pwEl) return;
-  const pw = pwEl.value;
-  const pwData = await lbLoad('lb_admin_pw');
-  if(!pwData){
-    if(errEl){ errEl.style.display='block'; errEl.textContent='No password set. Please refresh and set one.'; }
-    return;
-  }
-  if(pwHash(pw) === pwData.hash){
+function adminLogin(){
+  const pw = (document.getElementById('login_pw')||{}).value||'';
+  const stored = lbLoad('lb_admin_pw');
+  const err = document.getElementById('login_err');
+  if(!stored){ if(err){err.style.display='block';err.textContent='No password found. Please reset.';} return; }
+  if(pwHash(pw) === stored.hash){
     adminAuthed = true;
-    renderAdminPanel(document.getElementById('adminContent'));
+    renderAdminDashboard(document.getElementById('adminContent'));
   } else {
-    if(errEl){ errEl.style.display='block'; errEl.textContent='Incorrect password. Try again.'; }
-    pwEl.value = '';
-    pwEl.focus();
+    if(err){ err.style.display='block'; err.textContent='Incorrect password.'; }
+    const inp = document.getElementById('login_pw');
+    if(inp){ inp.value=''; inp.focus(); }
   }
 }
-
-async function resetAdminPw(){
-  if(!confirm('Reset admin password? Anyone will be able to set a new one.')) return;
-  await lbDel('lb_admin_pw');
-  adminAuthed = false;
-  renderAdminSetup(document.getElementById('adminContent'));
+function adminResetPw(){
+  if(!confirm('Reset password? Anyone will be able to create a new one.')) return;
+  lbDel('lb_admin_pw'); adminAuthed=false;
+  renderSetupScreen(document.getElementById('adminContent'));
 }
 
-async function renderAdminPanel(el){
-  const players=await lbLoad('lb_players')||[];
-  const results=await lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
-  const meta=await lbLoad('lb_meta')||{stage:'Group stage ongoing'};
-  const allTeams=[...new Set(Object.values(WC_GROUPS).flat())];
+/* ADMIN DASHBOARD */
+function renderAdminDashboard(el){
+  if(!el) return;
+  const players = lbLoad('lb_players')||[];
+  const results = lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
+  const meta = lbLoad('lb_meta')||{stage:'Group stage ongoing'};
+  const allTeams = [...new Set(Object.values(WC_GROUPS).flat())].sort();
 
-  el.innerHTML=`
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px">
-      <button class="admin-btn admin-btn-outline" onclick="adminAuthed=false;renderAdminContent()" style="font-size:12px;padding:6px 12px">Logout</button>
-      <button class="admin-btn admin-btn-outline" onclick="resetAdminPw()" style="font-size:12px;padding:6px 12px">Change Password</button>
-    </div>
+  const stageOptions = ['Group stage ongoing','Round of 32','Round of 16','Quarter-Finals','Semi-Finals','Final','Tournament complete']
+    .map(s=>`<option${meta.stage===s?' selected':''}>${s}</option>`).join('');
 
-    <!-- Tournament status -->
-    <div class="admin-section-title">Tournament Stage</div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
-      <select class="stage-select" id="adminStageSelect" style="flex:1;padding:9px 10px;font-size:13px">
-        <option ${meta.stage==='Group stage ongoing'?'selected':''}>Group stage ongoing</option>
-        <option ${meta.stage==='Round of 32'?'selected':''}>Round of 32</option>
-        <option ${meta.stage==='Round of 16'?'selected':''}>Round of 16</option>
-        <option ${meta.stage==='Quarter-Finals'?'selected':''}>Quarter-Finals</option>
-        <option ${meta.stage==='Semi-Finals'?'selected':''}>Semi-Finals</option>
-        <option ${meta.stage==='Final'?'selected':''}>Final</option>
-        <option ${meta.stage==='Tournament complete'?'selected':''}>Tournament complete</option>
-      </select>
-      <button class="admin-btn admin-btn-sky" onclick="saveStage()">Save</button>
-    </div>
-
-    <!-- Players setup -->
-    <div class="admin-section-title">Players & Their Teams</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Add each player and assign their teams from the draw. These are saved and visible on the leaderboard.</div>
-    <div id="adminPlayerList">${renderAdminPlayers(players,allTeams)}</div>
-    <button class="admin-btn admin-btn-outline" style="margin-top:8px;width:100%" onclick="addAdminPlayer()">+ Add Player</button>
-    <button class="admin-btn admin-btn-sky" style="margin-top:8px;width:100%" onclick="savePlayers()">Save All Players</button>
-
-    <!-- Group results -->
-    <div class="admin-section-title">Group Stage Results</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Enter the final standings for each group as they finish. This triggers score updates for all players.</div>
-    ${renderAdminGroups(results,allTeams)}
-    <button class="admin-btn admin-btn-sky" style="margin-top:8px;width:100%" onclick="saveGroupResults()">Save Group Results</button>
-
-    <!-- Knockout results -->
-    <div class="admin-section-title">Knockout Results</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Enter the winner of each knockout match after it is played. You can update this as the tournament progresses.</div>
-    ${renderAdminKnockout(results,allTeams)}
-    <button class="admin-btn admin-btn-sky" style="margin-top:8px;width:100%;margin-bottom:24px" onclick="saveKnockoutResults()">Save Knockout Results</button>
-  `;
-}
-
-function renderAdminPlayers(players,allTeams){
-  if(!players.length) return '<div style="font-size:13px;color:var(--muted);margin-bottom:8px">No players yet. Add your first player below.</div>';
-  return players.map((p,i)=>`
-    <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:8px">
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-        <input class="admin-input" style="margin-bottom:0;flex:1" id="pname_lb_${i}" value="${esc(p.name)}" placeholder="Player name...">
-        <button onclick="removePlayer(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;padding:0 4px">✕</button>
+  const playerRows = players.map((p,i)=>`
+    <div style="background:var(--surface2);border-radius:10px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+        <input type="text" value="${esc(p.name||'')}" id="adm_pname_${i}" placeholder="Player name"
+          style="flex:1;padding:8px 10px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;outline:none;font-family:inherit">
+        <button onclick="adminRemovePlayer(${i})" style="background:none;border:none;color:var(--red);font-size:20px;cursor:pointer;padding:0 4px;line-height:1">×</button>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Teams (select all that apply):</div>
-      <select class="stage-select" id="pteams_lb_${i}" multiple style="width:100%;height:120px;font-size:12px">
-        ${allTeams.map(t=>`<option value="${t}" ${(p.teams||[]).includes(t)?'selected':''}>${fl(t)} ${t}</option>`).join('')}
+      <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Teams (hold Ctrl/Cmd to pick multiple):</div>
+      <select multiple id="adm_pteams_${i}"
+        style="width:100%;height:110px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;padding:4px;font-family:inherit">
+        ${allTeams.map(t=>`<option value="${t}"${(p.teams||[]).includes(t)?' selected':''}>${fl(t)} ${t}</option>`).join('')}
       </select>
-      <div style="font-size:10px;color:var(--muted);margin-top:4px">Hold Ctrl/Cmd to select multiple teams</div>
     </div>`).join('');
-}
 
-function renderAdminGroups(results,allTeams){
-  return Object.keys(WC_GROUPS).map(g=>{
-    const gr=WC_GROUPS[g];
-    const saved=results.groups&&results.groups[g]||{};
-    const opts=gr.map(t=>`<option value="${t}" >${fl(t)} ${t}</option>`).join('');
-    const allOpts=`<option value="">--</option>${opts}`;
-    return `<div style="margin-bottom:10px;padding:12px;background:var(--surface2);border-radius:8px">
-      <div style="font-size:13px;font-weight:600;margin-bottom:8px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.08em">GROUP ${g}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">🥇 Winner</div>
-          <select class="stage-select" id="rg_${g}_w" style="width:100%">${allOpts}</select></div>
-        <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">🥈 Runner-up</div>
-          <select class="stage-select" id="rg_${g}_r" style="width:100%">${allOpts}</select></div>
-        <div style="grid-column:1/-1"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">🟡 3rd place (qualifies as best 3rd?)</div>
-          <select class="stage-select" id="rg_${g}_t" style="width:100%"><option value="">Did not qualify</option>${opts}</select></div>
+  const grpInputs = Object.keys(WC_GROUPS).map(g=>{
+    const r = (results.groups&&results.groups[g])||{};
+    const opts = `<option value="">--</option>`+WC_GROUPS[g].map(t=>`<option value="${t}">${fl(t)} ${t}</option>`).join('');
+    const selW = opts.replace(`value="${r.winner||''}"`,`value="${r.winner||''}" selected`);
+    const selR = opts.replace(`value="${r.runnerUp||''}"`,`value="${r.runnerUp||''}" selected`);
+    const sel3 = (`<option value="">Did not qualify</option>`+WC_GROUPS[g].map(t=>`<option value="${t}"${r.bestThird===t?' selected':''}>${fl(t)} ${t}</option>`).join(''));
+    return `<div style="margin-bottom:8px;padding:10px 12px;background:var(--surface2);border-radius:8px">
+      <div style="font-size:12px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:.08em;margin-bottom:8px">GROUP ${g}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+        <div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:3px;text-transform:uppercase">🥇 Winner</div>
+          <select id="rg_${g}_w" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit">${selW}</select>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:3px;text-transform:uppercase">🥈 Runner-up</div>
+          <select id="rg_${g}_r" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit">${selR}</select>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:3px;text-transform:uppercase">🟡 Best 3rd</div>
+          <select id="rg_${g}_t" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit">${sel3}</select>
+        </div>
       </div>
     </div>`;
   }).join('');
-}
 
-function renderAdminKnockout(results,allTeams){
-  const ko=results.knockout||{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''};
-  const rounds=[
-    {key:'r32',label:'Round of 32',note:'Enter one winner per match. Add all R32 winners.'},
-    {key:'r16',label:'Round of 16',note:''},
-    {key:'qf',label:'Quarter-Finals',note:''},
-    {key:'sf',label:'Semi-Finals',note:''}
-  ];
-  const teamOpts=['<option value="">-- Team --</option>',...allTeams.map(t=>`<option value="${t}">${fl(t)} ${t}</option>`)].join('');
-  let html='';
-  rounds.forEach(({key,label,note})=>{
-    const saved=ko[key]||[];
-    html+=`<div style="margin-bottom:12px">
-      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">${label}${note?` — <em style="font-weight:400">${note}</em>`:''}</div>
-      <div id="ko_${key}_wrap">`;
-    // Show up to 16 slots for R32, 8 for R16, etc
-    const maxSlots={r32:16,r16:8,qf:4,sf:2}[key];
-    for(let i=0;i<maxSlots;i++){
-      html+=`<div style="display:flex;gap:6px;margin-bottom:5px;align-items:center">
-        <span style="font-size:11px;color:var(--muted);min-width:24px">M${i+1}</span>
-        <select class="stage-select" id="ko_${key}_${i}" style="flex:1">${teamOpts}</select>
-      </div>`;
-    }
-    html+=`</div></div>`;
-  });
-  // Final
-  html+=`<div style="margin-bottom:12px">
-    <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">Final & 3rd Place Play-off</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <div style="flex:1;min-width:140px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">🥇 World Cup Winner</div>
-        <select class="stage-select" id="ko_winner" style="width:100%">${teamOpts}</select></div>
-      <div style="flex:1;min-width:140px"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">🥉 3rd Place Winner</div>
-        <select class="stage-select" id="ko_third" style="width:100%">${teamOpts}</select></div>
+  const koRounds = [{key:'r32',label:'Round of 32',n:16},{key:'r16',label:'Round of 16',n:8},{key:'qf',label:'Quarter-Finals',n:4},{key:'sf',label:'Semi-Finals',n:2}];
+  const koInputs = koRounds.map(({key,label,n})=>{
+    const saved = (results.knockout&&results.knockout[key])||[];
+    const rows = Array.from({length:n},(_,i)=>`
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:5px">
+        <span style="font-size:10px;color:var(--muted);min-width:18px">M${i+1}</span>
+        <input type="text" id="ko_${key}_${i}" value="${esc(saved[i]||'')}" placeholder="Winner..."
+          style="flex:1;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;outline:none;font-family:inherit">
+      </div>`).join('');
+    return `<div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">${label}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  const ko = results.knockout||{};
+
+  el.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button onclick="adminAuthed=false;renderLoginScreen(document.getElementById('adminContent'))"
+        style="padding:7px 14px;background:transparent;border:1.5px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;color:var(--muted);font-family:inherit">Logout</button>
+      <button onclick="adminResetPw()"
+        style="padding:7px 14px;background:transparent;border:1.5px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;color:var(--muted);font-family:inherit">Change Password</button>
     </div>
-  </div>`;
-  return html;
+
+    <!-- Stage -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">Tournament Stage</div>
+    <div style="display:flex;gap:8px;margin-bottom:18px;align-items:center;flex-wrap:wrap">
+      <select id="adm_stage" style="flex:1;padding:9px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:inherit">${stageOptions}</select>
+      <button onclick="adminSaveStage()" style="padding:9px 18px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Save Stage</button>
+    </div>
+
+    <!-- Players -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">Players & Teams</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Add each player and assign their drawn teams.</div>
+    <div id="adm_players">${playerRows||'<div style="font-size:13px;color:var(--muted);margin-bottom:8px">No players yet — add one below.</div>'}</div>
+    <button onclick="adminAddPlayer()"
+      style="width:100%;padding:9px;background:transparent;border:1.5px dashed var(--border);border-radius:8px;font-size:13px;cursor:pointer;color:var(--muted);margin-bottom:8px;font-family:inherit">
+      + Add Player
+    </button>
+    <button onclick="adminSavePlayers()"
+      style="width:100%;padding:10px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:20px;font-family:inherit">
+      Save Players ✓
+    </button>
+
+    <!-- Group Results -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">Group Stage Results</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Enter the top 3 for each group as they finish.</div>
+    ${grpInputs}
+    <button onclick="adminSaveGroups()"
+      style="width:100%;padding:10px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:20px;font-family:inherit">
+      Save Group Results ✓
+    </button>
+
+    <!-- Knockout Results -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">Knockout Results</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Type the winning team name after each match. You can update this at any time.</div>
+    ${koInputs}
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Final & 3rd Place</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:3px">🥇 World Cup Winner</div>
+          <input type="text" id="ko_winner" value="${esc(ko.winner||'')}" placeholder="Champion..."
+            style="width:100%;padding:7px 9px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;outline:none;font-family:inherit">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:3px">🥉 3rd Place Winner</div>
+          <input type="text" id="ko_third" value="${esc(ko.thirdPlace||'')}" placeholder="3rd place..."
+            style="width:100%;padding:7px 9px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;outline:none;font-family:inherit">
+        </div>
+      </div>
+    </div>
+    <button onclick="adminSaveKnockout()"
+      style="width:100%;padding:10px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:24px;font-family:inherit">
+      Save Knockout Results ✓
+    </button>`;
 }
 
-/* --- ADMIN SAVE FUNCTIONS --- */
-async function saveStage(){
-  const stage=document.getElementById('adminStageSelect')?.value||'Group stage ongoing';
-  await lbSave('lb_meta',{stage});
+/* ADMIN ACTIONS */
+function adminSaveStage(){
+  const stage = (document.getElementById('adm_stage')||{}).value||'Group stage ongoing';
+  lbSave('lb_meta', {stage});
   alert('Stage updated!');
+  loadLeaderboard();
 }
 
-async function addAdminPlayer(){
-  const players=await lbLoad('lb_players')||[];
+function adminAddPlayer(){
+  const players = lbLoad('lb_players')||[];
   players.push({name:'',teams:[]});
-  await lbSave('lb_players',players);
-  renderAdminPanel(document.getElementById('adminContent'));
+  lbSave('lb_players', players);
+  renderAdminDashboard(document.getElementById('adminContent'));
 }
 
-async function removePlayer(idx){
-  if(!confirm('Remove this player?'))return;
-  const players=await lbLoad('lb_players')||[];
-  players.splice(idx,1);
-  await lbSave('lb_players',players);
-  renderAdminPanel(document.getElementById('adminContent'));
+function adminRemovePlayer(idx){
+  if(!confirm('Remove this player?')) return;
+  const players = lbLoad('lb_players')||[];
+  players.splice(idx, 1);
+  lbSave('lb_players', players);
+  renderAdminDashboard(document.getElementById('adminContent'));
 }
 
-async function savePlayers(){
-  const players=await lbLoad('lb_players')||[];
-  const saved=players.map((_,i)=>{
-    const name=document.getElementById(`pname_lb_${i}`)?.value.trim()||'';
-    const sel=document.getElementById(`pteams_lb_${i}`);
-    const teams=sel?[...sel.selectedOptions].map(o=>o.value):[];
-    return {name,teams};
+function adminSavePlayers(){
+  const players = lbLoad('lb_players')||[];
+  const saved = players.map((_,i)=>{
+    const name = (document.getElementById('adm_pname_'+i)||{}).value||'';
+    const sel = document.getElementById('adm_pteams_'+i);
+    const teams = sel ? [...sel.selectedOptions].map(o=>o.value) : [];
+    return {name: name.trim(), teams};
   }).filter(p=>p.name);
-  await lbSave('lb_players',saved);
-  alert(`${saved.length} player${saved.length!==1?'s':''} saved!`);
+  lbSave('lb_players', saved);
+  alert(saved.length+' player'+(saved.length!==1?'s':'')+' saved!');
+  loadLeaderboard();
 }
 
-async function saveGroupResults(){
-  const results=await lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
-  if(!results.groups)results.groups={};
+function adminSaveGroups(){
+  const results = lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
+  if(!results.groups) results.groups = {};
   Object.keys(WC_GROUPS).forEach(g=>{
-    const w=document.getElementById(`rg_${g}_w`)?.value||'';
-    const r=document.getElementById(`rg_${g}_r`)?.value||'';
-    const t=document.getElementById(`rg_${g}_t`)?.value||'';
-    results.groups[g]={winner:w,runnerUp:r,bestThird:t?[t]:[]};
+    results.groups[g] = {
+      winner:   (document.getElementById('rg_'+g+'_w')||{}).value||'',
+      runnerUp: (document.getElementById('rg_'+g+'_r')||{}).value||'',
+      bestThird:(document.getElementById('rg_'+g+'_t')||{}).value||''
+    };
   });
-  // aggregate all best third across groups into one array
-  const allBestThird=Object.values(results.groups).flatMap(g=>g.bestThird||[]).filter(Boolean);
-  // attach to top level for scoring
-  results.bestThird=allBestThird;
-  // re-attach bestThird to each group result for scoring engine
-  Object.keys(WC_GROUPS).forEach(g=>{
-    if(results.groups[g]&&results.groups[g].bestThird){
-      results.groups[g].bestThird=results.groups[g].bestThird;
-    }
-  });
-  await lbSave('lb_results',results);
-  alert('Group results saved! Leaderboard will update on next refresh.');
+  lbSave('lb_results', results);
+  alert('Group results saved!');
+  loadLeaderboard();
 }
 
-async function saveKnockoutResults(){
-  const results=await lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
-  if(!results.knockout)results.knockout={};
+function adminSaveKnockout(){
+  const results = lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
+  if(!results.knockout) results.knockout = {};
   ['r32','r16','qf','sf'].forEach(key=>{
-    const max={r32:16,r16:8,qf:4,sf:2}[key];
-    const winners=[];
-    for(let i=0;i<max;i++){
-      const v=document.getElementById(`ko_${key}_${i}`)?.value||'';
-      if(v)winners.push(v);
-    }
-    results.knockout[key]=winners;
+    const n = {r32:16,r16:8,qf:4,sf:2}[key];
+    results.knockout[key] = Array.from({length:n},(_,i)=>(document.getElementById('ko_'+key+'_'+i)||{}).value||'').filter(Boolean);
   });
-  results.knockout.winner=document.getElementById('ko_winner')?.value||'';
-  results.knockout.thirdPlace=document.getElementById('ko_third')?.value||'';
-  await lbSave('lb_results',results);
-  alert('Knockout results saved! Leaderboard will update on next refresh.');
+  results.knockout.winner     = (document.getElementById('ko_winner')||{}).value||'';
+  results.knockout.thirdPlace = (document.getElementById('ko_third')||{}).value||'';
+  lbSave('lb_results', results);
+  alert('Knockout results saved!');
+  loadLeaderboard();
 }
 
 /* end leaderboard system */
