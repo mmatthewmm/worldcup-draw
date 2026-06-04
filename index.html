@@ -441,44 +441,85 @@ canvas#wheel { display:block; max-width:100%; }
 
 <!-- LEADERBOARD -->
 <div id="leaderboard" class="section">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-    <div>
-      <div style="font-size:22px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Leaderboard</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="lbMeta">Loading...</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="loadLeaderboard()" style="padding:8px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;cursor:pointer;font-family:inherit;">↻ Refresh</button>
-      <button id="adminOpenBtn" onclick="openAdmin()" style="padding:8px 14px;border-radius:8px;border:none;background:var(--red);color:#fff;font-size:13px;cursor:pointer;font-family:inherit;">⚙️ Admin</button>
-    </div>
-  </div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:14px;">
+
+  <!-- Points key -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:16px;box-shadow:var(--shadow);">
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;">Points System</div>
     <div style="display:flex;flex-wrap:wrap;gap:5px;">
-      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,204,0,.15);color:#7a5000;border:1px solid rgba(255,204,0,.4)">🥇 Group winner: 5pts</span>
-      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(0,119,200,.1);color:var(--sky);border:1px solid rgba(0,119,200,.3)">🥈 Group runner-up: 3pts</span>
-      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(0,166,81,.1);color:var(--green);border:1px solid rgba(0,166,81,.3)">🟡 Best 3rd: 2pts</span>
-      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text);border:1px solid var(--border)">R32: 5pts · R16: 8pts · QF: 12pts · SF: 18pts</span>
-      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(232,35,58,.1);color:var(--red);border:1px solid rgba(232,35,58,.3)">3rd place win: 10pts · 🏆 WC winner: 30pts</span>
+      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,204,0,.15);color:#7a5000;border:1px solid rgba(255,204,0,.4);">Group winner: 5pts</span>
+      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(0,119,200,.1);color:var(--sky);border:1px solid rgba(0,119,200,.3);">Group runner-up: 3pts</span>
+      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(0,166,81,.1);color:var(--green);border:1px solid rgba(0,166,81,.3);">Best 3rd: 2pts</span>
+      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">R32: 5 · R16: 8 · QF: 12 · SF: 18pts</span>
+      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(232,35,58,.1);color:var(--red);border:1px solid rgba(232,35,58,.3);">3rd place: 10pts · WC Winner: 30pts</span>
     </div>
   </div>
-  <div id="lbContent" style="min-height:100px;"></div>
-</div>
 
+  <!-- Leaderboard display -->
+  <div id="lbContent" style="margin-bottom:20px;"></div>
 
-<!-- ADMIN MODAL -->
-<div id="adminModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;overflow-y:auto;">
-  <div style="background:var(--surface);border-radius:14px;max-width:680px;margin:30px auto;padding:24px;position:relative;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-      <span style="font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">⚙️ Admin Panel</span>
-      <button onclick="closeAdmin()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted);line-height:1;">×</button>
+  <!-- Edit section (always visible, used from your device) -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow);">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);">
+      Edit Leaderboard <span style="font-weight:400;font-size:10px;color:var(--muted);">(saved on this device)</span>
     </div>
-    <div id="adminBody"></div>
+
+    <!-- Stage -->
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px;">Tournament Stage</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="lbStage" style="flex:1;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:inherit;">
+          <option>Group stage ongoing</option>
+          <option>Round of 32</option>
+          <option>Round of 16</option>
+          <option>Quarter-Finals</option>
+          <option>Semi-Finals</option>
+          <option>Final</option>
+          <option>Tournament complete</option>
+        </select>
+        <button onclick="lbSaveStage()" style="padding:8px 16px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Save</button>
+      </div>
+    </div>
+
+    <!-- Players & teams -->
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Players & Teams</label>
+        <button onclick="lbAddPlayer()" style="padding:5px 12px;background:transparent;border:1.5px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;color:var(--text);font-family:inherit;">+ Add Player</button>
+      </div>
+      <div id="lbPlayerRows"></div>
+      <button onclick="lbSavePlayers()" style="width:100%;padding:9px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;font-family:inherit;">Save Players</button>
+    </div>
+
+    <!-- Group results -->
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px;">Group Results</label>
+      <div id="lbGroupRows"></div>
+      <button onclick="lbSaveGroups()" style="width:100%;padding:9px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;font-family:inherit;">Save Group Results</button>
+    </div>
+
+    <!-- Knockout results -->
+    <div>
+      <label style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px;">Knockout Results <span style="font-weight:400;font-size:10px;">(type team name, one per match)</span></label>
+      <div id="lbKORows"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;margin-bottom:8px;">
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">WC Winner</label>
+          <input type="text" id="lbWinner" placeholder="e.g. France" style="width:100%;padding:7px 9px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;outline:none;font-family:inherit;">
+        </div>
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:3px;">3rd Place Winner</label>
+          <input type="text" id="lbThird" placeholder="e.g. England" style="width:100%;padding:7px 9px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;outline:none;font-family:inherit;">
+        </div>
+      </div>
+      <button onclick="lbSaveKO()" style="width:100%;padding:9px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Save Knockout Results</button>
+    </div>
   </div>
 </div>
 
 </div><!-- #app -->
 
 <script>
+
 /* ===== THEME ===== */
 function toggleTheme(){
   const html=document.documentElement;
@@ -1153,14 +1194,14 @@ function showTab(id){
 }
 
 
-/* ===== LEADERBOARD & ADMIN ===== */
+/* ===== LEADERBOARD ===== */
 
 const WC_GROUPS = {
   A:['Mexico','South Africa','South Korea','Czechia'],
   B:['Canada','Bosnia','Qatar','Switzerland'],
   C:['Brazil','Morocco','Haiti','Scotland'],
   D:['USA','Paraguay','Australia','Turkey'],
-  E:['Germany','Curaçao','Ivory Coast','Ecuador'],
+  E:['Germany','Curacao','Ivory Coast','Ecuador'],
   F:['Netherlands','Japan','Sweden','Tunisia'],
   G:['Belgium','Egypt','Iran','New Zealand'],
   H:['Spain','Cape Verde','Saudi Arabia','Uruguay'],
@@ -1170,302 +1211,235 @@ const WC_GROUPS = {
   L:['England','Croatia','Ghana','Panama']
 };
 
-const PTS = {group_winner:5,group_runner_up:3,group_best_third:2,r32:5,r16:8,qf:12,sf:18,third_place:10,winner:30};
+const LB_PTS = {gw:5, gr:3, g3:2, r32:5, r16:8, qf:12, sf:18, third:10, win:30};
 
-function lbSave(k,v){ try{localStorage.setItem('wc26_'+k,JSON.stringify(v));}catch(e){} }
-function lbLoad(k){ try{var v=localStorage.getItem('wc26_'+k);return v?JSON.parse(v):null;}catch(e){return null;} }
-function lbDel(k){ try{localStorage.removeItem('wc26_'+k);}catch(e){} }
-function pwHash(s){ var h=5381; for(var i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i); return (h>>>0).toString(36); }
+/* Storage - plain localStorage, persists on refresh */
+function lbSet(k,v){ try{ localStorage.setItem('wc26_'+k, JSON.stringify(v)); }catch(e){} }
+function lbGet(k){ try{ var s=localStorage.getItem('wc26_'+k); return s?JSON.parse(s):null; }catch(e){ return null; } }
 
-function computeScore(teams, results){
-  if(!teams||!teams.length||!results) return {total:0,breakdown:{}};
-  var bd={}, total=0;
-  function add(t,r,p){ if(!bd[t])bd[t]={pts:0,reasons:[]}; bd[t].pts+=p; bd[t].reasons.push(r); total+=p; }
+function lbScore(teams, results){
+  var total=0, bd={};
+  if(!teams||!results) return {total:0,bd:{}};
+  function add(t,r,p){ if(!bd[t])bd[t]=0; bd[t]+=p; total+=p; }
+  /* groups */
   if(results.groups){
     Object.keys(results.groups).forEach(function(g){
-      var r=results.groups[g]; if(!r) return;
-      teams.forEach(function(t){
-        if(r.winner&&r.winner===t) add(t,'Group winner',PTS.group_winner);
-        else if(r.runnerUp&&r.runnerUp===t) add(t,'Runner-up',PTS.group_runner_up);
-        else if(r.bestThird&&r.bestThird===t) add(t,'Best 3rd',PTS.group_best_third);
+      var r=results.groups[g];
+      if(!r) return;
+      (teams||[]).forEach(function(t){
+        if(r.w===t) add(t,'gw',LB_PTS.gw);
+        else if(r.r===t) add(t,'gr',LB_PTS.gr);
+        else if(r.t===t) add(t,'g3',LB_PTS.g3);
       });
     });
   }
-  if(results.knockout){
-    ['r32','r16','qf','sf'].forEach(function(round){
-      if(!results.knockout[round]) return;
-      results.knockout[round].forEach(function(w){
-        if(w&&teams.indexOf(w)>=0) add(w,round.toUpperCase()+' win',PTS[round]);
-      });
+  /* knockouts */
+  var ko=results.ko||{};
+  ['r32','r16','qf','sf'].forEach(function(rnd){
+    if(!ko[rnd]) return;
+    ko[rnd].forEach(function(w){
+      if(w&&(teams||[]).indexOf(w)>=0) add(w,rnd,LB_PTS[rnd]);
     });
-    if(results.knockout.thirdPlace) teams.forEach(function(t){ if(results.knockout.thirdPlace===t) add(t,'3rd place',PTS.third_place); });
-    if(results.knockout.winner) teams.forEach(function(t){ if(results.knockout.winner===t) add(t,'WC Winner!',PTS.winner); });
-  }
-  return {total:total,breakdown:bd};
+  });
+  if(ko.third&&(teams||[]).indexOf(ko.third)>=0) add(ko.third,'third',LB_PTS.third);
+  if(ko.win&&(teams||[]).indexOf(ko.win)>=0) add(ko.win,'win',LB_PTS.win);
+  return {total:total, bd:bd};
 }
 
 function loadLeaderboard(){
   var el=document.getElementById('lbContent');
-  var metaEl=document.getElementById('lbMeta');
   if(!el) return;
-  try {
-    var players=lbLoad('lb_players')||[];
-    var results=lbLoad('lb_results')||{};
-    var meta=lbLoad('lb_meta')||{};
-    if(metaEl) metaEl.textContent=players.length+' player'+(players.length!==1?'s':'')+' · '+(meta.stage||'Group stage ongoing');
-    if(!players.length){
-      el.innerHTML='<div style="text-align:center;padding:36px;background:var(--surface);border:1px solid var(--border);border-radius:12px;"><div style="font-size:32px;margin-bottom:10px">⚽</div><div style="font-weight:600;margin-bottom:6px">No players yet</div><div style="font-size:13px;color:var(--muted)">Open the Admin panel to add players after the draw.</div></div>';
-      return;
-    }
-    var scored=players.map(function(p){ return Object.assign({},p,{score:computeScore(p.teams||[],results)}); });
-    scored.sort(function(a,b){ return b.score.total-a.score.total; });
-    var html='<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;">';
-    scored.forEach(function(p,i){
-      var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1);
-      var rc=i===0?'#ffcc00':i===1?'#aaa':i===2?'#cd7f32':'var(--muted)';
-      var chips=(p.teams||[]).map(function(t){
-        var ts=p.score.breakdown[t]; var has=ts&&ts.pts>0;
-        return '<span style="font-size:11px;padding:2px 7px;border-radius:5px;margin:1px 1px 2px;display:inline-block;'+(has?'background:rgba(0,166,81,.12);border:1px solid rgba(0,166,81,.3);color:var(--green)':'background:var(--surface2);border:1px solid var(--border);color:var(--text)')+'">'+fl(t)+' '+t+(has?' +'+ts.pts+'pts':'')+'</span>';
-      }).join('');
-      var bkd=Object.keys(p.score.breakdown).map(function(t){ return t+': '+p.score.breakdown[t].pts+'pts'; }).join(' · ')||'No points yet';
-      html+='<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border2);">';
-      html+='<div style="font-weight:800;font-size:22px;min-width:28px;text-align:center;color:'+rc+'">'+medal+'</div>';
-      html+='<div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:15px;">'+esc(p.name||'')+'</div><div style="margin-top:5px;">'+chips+'</div><div style="font-size:10px;color:var(--muted);margin-top:3px;">'+esc(bkd)+'</div></div>';
-      html+='<div style="text-align:right;flex-shrink:0;padding-left:10px;"><div style="font-weight:800;font-size:28px;color:var(--sky);">'+p.score.total+'</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;">pts</div></div>';
-      html+='</div>';
-    });
-    html+='</div>';
-    el.innerHTML=html;
-  } catch(e) {
-    console.error(e);
-    if(el) el.innerHTML='<div style="color:var(--red);padding:12px;">Error: '+e.message+'</div>';
+  var players=lbGet('lb_players')||[];
+  var results=lbGet('lb_results')||{};
+  var meta=lbGet('lb_meta')||{};
+
+  /* render edit fields */
+  lbRenderEdit(players, results, meta);
+
+  if(!players.length){
+    el.innerHTML='<div style="text-align:center;padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;"><div style="font-size:28px;margin-bottom:8px;">⚽</div><div style="font-weight:600;margin-bottom:4px;">No players yet</div><div style="font-size:13px;color:var(--muted);">Use the edit section below to add players and their teams.</div></div>';
+    return;
   }
-}
 
-var adminAuthed=false;
+  var scored=players.map(function(p){
+    var s=lbScore(p.teams||[], results);
+    return {name:p.name, teams:p.teams||[], total:s.total, bd:s.bd};
+  });
+  scored.sort(function(a,b){ return b.total-a.total; });
 
-function openAdmin(){
-  var modal=document.getElementById('adminModal');
-  if(!modal){alert('Admin modal not found');return;}
-  modal.style.display='block';
-  document.body.style.overflow='hidden';
-  showAdminGate();
-}
+  var stage=meta.stage||'Group stage ongoing';
+  var html='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">';
+  html+='<div style="font-size:22px;font-weight:700;letter-spacing:.04em;">Leaderboard</div>';
+  html+='<span style="font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(0,119,200,.1);color:var(--sky);border:1px solid rgba(0,119,200,.3);">'+stage+'</span>';
+  html+='</div>';
+  html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px;">';
 
-function closeAdmin(){
-  var modal=document.getElementById('adminModal');
-  if(modal) modal.style.display='none';
-  document.body.style.overflow='';
-}
-
-function showAdminGate(){
-  var el=document.getElementById('adminBody');
-  if(!el){alert('adminBody not found');return;}
-  var pw=lbLoad('lb_admin_pw');
-  if(!pw){ showSetup(el); return; }
-  if(!adminAuthed){ showLogin(el); return; }
-  showDashboard(el);
-}
-function adminLogout(){ adminAuthed=false; showLogin(document.getElementById('adminBody')); }
-
-
-function inp(id,type,ph){
-  return '<input type="'+type+'" id="'+id+'" placeholder="'+ph+'" style="width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;display:block;box-sizing:border-box;font-family:inherit;">';
-}
-function btn(onclick,label,style){
-  style=style||'background:var(--sky);color:#fff;';
-  return '<button onclick="'+onclick+'" style="'+style+'width:100%;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;font-family:inherit;">'+label+'</button>';
-}
-
-function showSetup(el){
-  el.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5;">First time setup — set your admin password.</p>'+
-    inp('sp1','password','Password (min 4 characters)...')+
-    inp('sp2','password','Confirm password...')+
-    '<div id="serr" style="color:var(--red);font-size:12px;margin-bottom:8px;display:none;"></div>'+
-    btn('doSetup()','Set Password →');
-}
-
-function doSetup(){
-  var p1=document.getElementById('sp1').value;
-  var p2=document.getElementById('sp2').value;
-  var e=document.getElementById('serr');
-  if(p1.length<4){e.style.display='block';e.textContent='Minimum 4 characters.';return;}
-  if(p1!==p2){e.style.display='block';e.textContent='Passwords do not match.';return;}
-  lbSave('lb_admin_pw',{hash:pwHash(p1)});
-  adminAuthed=true;
-  showDashboard(document.getElementById('adminBody'));
-}
-
-function showLogin(el){
-  el.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Enter your admin password.</p>'+
-    inp('lp','password','Admin password...')+
-    '<div id="lerr" style="color:var(--red);font-size:12px;margin-bottom:8px;display:none;"></div>'+
-    '<div style="display:flex;gap:8px;">'+
-    '<button onclick="doLogin()" style="flex:1;padding:11px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Login →</button>'+
-    '<button onclick="doReset()" style="padding:11px 14px;background:transparent;border:1.5px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;color:var(--muted);font-family:inherit;">Reset</button>'+
-    '</div>';
-  var lpEl=document.getElementById('lp');
-  if(lpEl) lpEl.onkeydown=function(e){if(e.key==='Enter')doLogin();};
-}
-
-function doLogin(){
-  var pw=(document.getElementById('lp')||{}).value||'';
-  var stored=lbLoad('lb_admin_pw');
-  var e=document.getElementById('lerr');
-  if(!stored){if(e){e.style.display='block';e.textContent='No password set.';}return;}
-  if(pwHash(pw)===stored.hash){
-    adminAuthed=true;
-    showDashboard(document.getElementById('adminBody'));
-  } else {
-    if(e){e.style.display='block';e.textContent='Incorrect password.';}
-    var lp=document.getElementById('lp'); if(lp){lp.value='';lp.focus();}
-  }
-}
-
-function doReset(){
-  if(!confirm('Reset password?')) return;
-  lbDel('lb_admin_pw'); adminAuthed=false;
-  showSetup(document.getElementById('adminBody'));
-}
-
-function showDashboard(el){
-  if(!el) return;
-  var players=lbLoad('lb_players')||[];
-  var results=lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
-  var meta=lbLoad('lb_meta')||{stage:'Group stage ongoing'};
-  var allTeams=[].concat.apply([],Object.values(WC_GROUPS)).filter(function(v,i,a){return a.indexOf(v)===i;}).sort();
-
-  var stages=['Group stage ongoing','Round of 32','Round of 16','Quarter-Finals','Semi-Finals','Final','Tournament complete'];
-  var stageOpts=stages.map(function(s){return '<option'+(meta.stage===s?' selected':'')+'>'+s+'</option>';}).join('');
-
-  var pRows=players.map(function(p,i){
-    var teamOpts=allTeams.map(function(t){return '<option value="'+t+'"'+((p.teams||[]).indexOf(t)>=0?' selected':'')+'>'+fl(t)+' '+t+'</option>';}).join('');
-    return '<div style="background:var(--surface2);border-radius:9px;padding:10px;margin-bottom:8px;">'+
-      '<div style="display:flex;gap:6px;margin-bottom:6px;">'+
-      '<input type="text" id="pn'+i+'" value="'+esc(p.name||'')+'" placeholder="Player name" style="flex:1;padding:7px 9px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;outline:none;font-family:inherit;">'+
-      '<button onclick="rmPlayer('+i+')" style="background:none;border:none;color:var(--red);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">×</button></div>'+
-      '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Teams (Ctrl/Cmd+click for multiple):</div>'+
-      '<select multiple id="pt'+i+'" style="width:100%;height:100px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;padding:3px;font-family:inherit;">'+teamOpts+'</select>'+
-      '</div>';
-  }).join('');
-
-  var gRows=Object.keys(WC_GROUPS).map(function(g){
-    var r=(results.groups&&results.groups[g])||{};
-    var topts='<option value=""></option>'+WC_GROUPS[g].map(function(t){return '<option value="'+t+'">'+fl(t)+' '+t+'</option>';}).join('');
-    function sel(id,cur){ return '<select id="'+id+'" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;">'+topts.replace('value="'+cur+'"','value="'+cur+'" selected')+'</select>'; }
-    var t3opts='<option value="">Did not qualify</option>'+WC_GROUPS[g].map(function(t){return '<option value="'+t+'"'+(r.bestThird===t?' selected':'')+'>'+fl(t)+' '+t+'</option>';}).join('');
-    return '<div style="background:var(--surface2);border-radius:8px;padding:9px 11px;margin-bottom:7px;">'+
-      '<div style="font-size:12px;font-weight:700;letter-spacing:.08em;margin-bottom:7px;">GROUP '+g+'</div>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;">'+
-      '<div><div style="font-size:9px;color:var(--muted);margin-bottom:2px;">🥇 Winner</div>'+sel('gw'+g,r.winner||'')+'</div>'+
-      '<div><div style="font-size:9px;color:var(--muted);margin-bottom:2px;">🥈 Runner-up</div>'+sel('gr'+g,r.runnerUp||'')+'</div>'+
-      '<div><div style="font-size:9px;color:var(--muted);margin-bottom:2px;">🟡 Best 3rd</div><select id="gt'+g+'" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;">'+t3opts+'</select></div>'+
-      '</div></div>';
-  }).join('');
-
-  var koRounds=[{k:'r32',l:'Round of 32',n:16},{k:'r16',l:'Round of 16',n:8},{k:'qf',l:'Quarter-Finals',n:4},{k:'sf',l:'Semi-Finals',n:2}];
-  var koRows=koRounds.map(function(rd){
-    var saved=(results.knockout&&results.knockout[rd.k])||[];
-    var rows=Array.from({length:rd.n},function(_,i){
-      return '<div style="display:flex;gap:5px;margin-bottom:4px;align-items:center;">'+
-        '<span style="font-size:10px;color:var(--muted);min-width:20px;">M'+(i+1)+'</span>'+
-        '<input type="text" id="ko_'+rd.k+'_'+i+'" value="'+esc(saved[i]||'')+'" placeholder="Winner..." style="flex:1;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;outline:none;font-family:inherit;">'+
-        '</div>';
+  scored.forEach(function(p,i){
+    var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':''+(i+1);
+    var rc=i===0?'#d4a017':i===1?'#888':i===2?'#a0522d':'var(--muted)';
+    var chips=(p.teams||[]).map(function(t){
+      var pts=p.bd[t]||0;
+      var col=pts>0?'background:rgba(0,166,81,.12);border:1px solid rgba(0,166,81,.3);color:var(--green);':'background:var(--surface2);border:1px solid var(--border);color:var(--text);';
+      return '<span style="font-size:11px;padding:2px 7px;border-radius:5px;'+col+'display:inline-block;margin:1px;">'+fl(t)+' '+t+(pts>0?' +'+pts+'pts':'')+'</span>';
     }).join('');
-    return '<div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">'+rd.l+'</div>'+rows+'</div>';
-  }).join('');
+    html+='<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border2);">';
+    html+='<div style="font-weight:800;font-size:20px;min-width:28px;text-align:center;color:'+rc+';">'+medal+'</div>';
+    html+='<div style="flex:1;min-width:0;"><div style="font-weight:600;font-size:14px;">'+esc(p.name)+'</div><div style="margin-top:4px;">'+chips+'</div></div>';
+    html+='<div style="text-align:right;flex-shrink:0;padding-left:10px;"><div style="font-weight:800;font-size:26px;color:var(--sky);">'+p.total+'</div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;">pts</div></div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
 
-  var ko=results.knockout||{};
-
-  function sBtn(onclick,label,col){
-    col=col||'var(--sky)';
-    return '<button onclick="'+onclick+'" style="width:100%;padding:10px;background:'+col+';color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:14px;font-family:inherit;">'+label+'</button>';
+function lbRenderEdit(players, results, meta){
+  /* Stage dropdown */
+  var stageEl=document.getElementById('lbStage');
+  if(stageEl && meta.stage){
+    var opts=stageEl.options;
+    for(var i=0;i<opts.length;i++){
+      if(opts[i].text===meta.stage){ stageEl.selectedIndex=i; break; }
+    }
   }
 
-  el.innerHTML=
-    '<div style="display:flex;gap:6px;margin-bottom:14px;">'+
-    '<button onclick="adminLogout()" style="padding:6px 12px;background:transparent;border:1.5px solid var(--border);border-radius:7px;font-size:11px;cursor:pointer;color:var(--muted);">Logout</button>'+
-    '<button onclick="doReset()" style="padding:6px 12px;background:transparent;border:1.5px solid var(--border);border-radius:7px;font-size:11px;cursor:pointer;color:var(--muted);font-family:inherit;">Change Password</button>'+
-    '</div>'+
+  /* Player rows */
+  var allTeams=[].concat.apply([],Object.values(WC_GROUPS)).filter(function(v,i,a){return a.indexOf(v)===i;}).sort();
+  var pr=document.getElementById('lbPlayerRows');
+  if(pr){
+    pr.innerHTML=(players.length?'':'<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">No players yet.</div>')+
+      players.map(function(p,i){
+        var teamOpts=allTeams.map(function(t){
+          return '<option value="'+t+'"'+((p.teams||[]).indexOf(t)>=0?' selected':'')+'>'+fl(t)+' '+t+'</option>';
+        }).join('');
+        return '<div style="background:var(--surface2);border-radius:9px;padding:10px;margin-bottom:7px;">'+
+          '<div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;">'+
+          '<input type="text" id="lbpn'+i+'" value="'+esc(p.name||'')+'" placeholder="Player name" style="flex:1;padding:7px 9px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;outline:none;font-family:inherit;">'+
+          '<button onclick="lbRemovePlayer('+i+')" style="background:none;border:none;color:var(--red);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;">x</button></div>'+
+          '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Teams (hold Ctrl/Cmd to select multiple):</div>'+
+          '<select multiple id="lbpt'+i+'" style="width:100%;height:90px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;padding:3px;font-family:inherit;">'+teamOpts+'</select>'+
+          '</div>';
+      }).join('');
+  }
 
-    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);">Tournament Stage</div>'+
-    '<div style="display:flex;gap:7px;margin-bottom:16px;align-items:center;">'+
-    '<select id="astage" style="flex:1;padding:8px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:inherit;">'+stageOpts+'</select>'+
-    '<button onclick="saveStage()" style="padding:8px 14px;background:var(--sky);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Save</button>'+
-    '</div>'+
+  /* Group rows */
+  var gr=document.getElementById('lbGroupRows');
+  if(gr){
+    var rg=results.groups||{};
+    gr.innerHTML=Object.keys(WC_GROUPS).map(function(g){
+      var r=rg[g]||{};
+      var topts='<option value=""></option>'+WC_GROUPS[g].map(function(t){
+        return '<option value="'+t+'">'+fl(t)+' '+t+'</option>';
+      }).join('');
+      function mkSel(id,cur){
+        return '<select id="'+id+'" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;">'+
+          topts.replace('value="'+cur+'"','value="'+cur+'" selected')+'</select>';
+      }
+      var t3opts='<option value="">No</option>'+WC_GROUPS[g].map(function(t){
+        return '<option value="'+t+'"'+(r.t===t?' selected':'')+'>'+fl(t)+' '+t+'</option>';
+      }).join('');
+      return '<div style="background:var(--surface2);border-radius:8px;padding:9px 11px;margin-bottom:7px;">'+
+        '<div style="font-size:12px;font-weight:700;letter-spacing:.06em;margin-bottom:6px;">GROUP '+g+'</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;">'+
+        '<div><div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Winner</div>'+mkSel('lbgw'+g,r.w||'')+'</div>'+
+        '<div><div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Runner-up</div>'+mkSel('lbgr'+g,r.r||'')+'</div>'+
+        '<div><div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Best 3rd?</div>'+
+        '<select id="lbgt'+g+'" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:inherit;">'+t3opts+'</select>'+
+        '</div></div></div>';
+    }).join('');
+  }
 
-    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);">Players &amp; Teams</div>'+
-    '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Add players and assign their teams from the draw.</div>'+
-    '<div id="plist">'+(pRows||'<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">No players yet.</div>')+'</div>'+
-    '<button onclick="addPlayer()" style="width:100%;padding:8px;background:transparent;border:1.5px dashed var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--muted);margin-bottom:7px;font-family:inherit;">+ Add Player</button>'+
-    sBtn('savePlayers()','Save Players ✓')+
-
-    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);">Group Results</div>'+
-    gRows+
-    sBtn('saveGroups()','Save Group Results ✓')+
-
-    '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);">Knockout Results</div>'+
-    '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Enter winner of each match as they finish.</div>'+
-    koRows+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
-    '<div><div style="font-size:9px;color:var(--muted);margin-bottom:3px;">🥇 WC Winner</div><input type="text" id="ko_winner" value="'+esc(ko.winner||'')+'" placeholder="Champion..." style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;outline:none;font-family:inherit;"></div>'+
-    '<div><div style="font-size:9px;color:var(--muted);margin-bottom:3px;">🥉 3rd Place</div><input type="text" id="ko_third" value="'+esc(ko.thirdPlace||'')+'" placeholder="3rd place..." style="width:100%;padding:7px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;outline:none;font-family:inherit;"></div>'+
-    '</div>'+
-    sBtn('saveKnockout()','Save Knockout Results ✓');
+  /* KO rows */
+  var ko=results.ko||{};
+  var kr=document.getElementById('lbKORows');
+  if(kr){
+    var rounds=[{k:'r32',l:'Round of 32',n:16},{k:'r16',l:'Round of 16',n:8},{k:'qf',l:'Quarter-Finals',n:4},{k:'sf',l:'Semi-Finals',n:2}];
+    kr.innerHTML=rounds.map(function(rd){
+      var saved=ko[rd.k]||[];
+      var rows=Array.from({length:rd.n},function(_,i){
+        return '<div style="display:flex;gap:5px;margin-bottom:4px;align-items:center;">'+
+          '<span style="font-size:10px;color:var(--muted);min-width:18px;">M'+(i+1)+'</span>'+
+          '<input type="text" id="lbko_'+rd.k+'_'+i+'" value="'+esc(saved[i]||'')+'" placeholder="Winner..." style="flex:1;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;outline:none;font-family:inherit;"></div>';
+      }).join('');
+      return '<div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">'+rd.l+'</div>'+rows+'</div>';
+    }).join('');
+    /* set winner/third */
+    var w=document.getElementById('lbWinner');
+    var t=document.getElementById('lbThird');
+    if(w) w.value=ko.win||'';
+    if(t) t.value=ko.third||'';
+  }
 }
 
-function saveStage(){
-  var s=(document.getElementById('astage')||{}).value||'Group stage ongoing';
-  lbSave('lb_meta',{stage:s}); alert('Stage saved!'); loadLeaderboard();
+/* Save functions */
+function lbSaveStage(){
+  var s=(document.getElementById('lbStage')||{}).value||'Group stage ongoing';
+  lbSet('lb_meta',{stage:s});
+  loadLeaderboard();
 }
-function addPlayer(){
-  var p=lbLoad('lb_players')||[]; p.push({name:'',teams:[]});
-  lbSave('lb_players',p); showDashboard(document.getElementById('adminBody'));
+
+function lbAddPlayer(){
+  var p=lbGet('lb_players')||[];
+  p.push({name:'',teams:[]});
+  lbSet('lb_players',p);
+  loadLeaderboard();
 }
-function rmPlayer(i){
-  if(!confirm('Remove player?')) return;
-  var p=lbLoad('lb_players')||[]; p.splice(i,1);
-  lbSave('lb_players',p); showDashboard(document.getElementById('adminBody'));
+
+function lbRemovePlayer(i){
+  if(!confirm('Remove this player?')) return;
+  var p=lbGet('lb_players')||[];
+  p.splice(i,1);
+  lbSet('lb_players',p);
+  loadLeaderboard();
 }
-function savePlayers(){
-  var p=lbLoad('lb_players')||[];
+
+function lbSavePlayers(){
+  var p=lbGet('lb_players')||[];
   var saved=p.map(function(_,i){
-    var name=((document.getElementById('pn'+i)||{}).value||'').trim();
-    var sel=document.getElementById('pt'+i);
+    var name=((document.getElementById('lbpn'+i)||{}).value||'').trim();
+    var sel=document.getElementById('lbpt'+i);
     var teams=sel?Array.from(sel.selectedOptions).map(function(o){return o.value;}):[]; 
     return {name:name,teams:teams};
-  }).filter(function(p){return p.name;});
-  lbSave('lb_players',saved);
+  }).filter(function(x){return x.name;});
+  lbSet('lb_players',saved);
   alert(saved.length+' player'+(saved.length!==1?'s':'')+' saved!');
   loadLeaderboard();
 }
-function saveGroups(){
-  var results=lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
+
+function lbSaveGroups(){
+  var results=lbGet('lb_results')||{groups:{},ko:{}};
   if(!results.groups) results.groups={};
   Object.keys(WC_GROUPS).forEach(function(g){
     results.groups[g]={
-      winner:(document.getElementById('gw'+g)||{}).value||'',
-      runnerUp:(document.getElementById('gr'+g)||{}).value||'',
-      bestThird:(document.getElementById('gt'+g)||{}).value||''
+      w:(document.getElementById('lbgw'+g)||{}).value||'',
+      r:(document.getElementById('lbgr'+g)||{}).value||'',
+      t:(document.getElementById('lbgt'+g)||{}).value||''
     };
   });
-  lbSave('lb_results',results); alert('Group results saved!'); loadLeaderboard();
+  lbSet('lb_results',results);
+  alert('Group results saved!');
+  loadLeaderboard();
 }
-function saveKnockout(){
-  var results=lbLoad('lb_results')||{groups:{},knockout:{r32:[],r16:[],qf:[],sf:[],thirdPlace:'',winner:''}};
-  if(!results.knockout) results.knockout={};
+
+function lbSaveKO(){
+  var results=lbGet('lb_results')||{groups:{},ko:{}};
+  if(!results.ko) results.ko={};
   ['r32','r16','qf','sf'].forEach(function(k){
     var n={r32:16,r16:8,qf:4,sf:2}[k];
-    results.knockout[k]=Array.from({length:n},function(_,i){ return (document.getElementById('ko_'+k+'_'+i)||{}).value||''; }).filter(Boolean);
+    results.ko[k]=Array.from({length:n},function(_,i){
+      return ((document.getElementById('lbko_'+k+'_'+i)||{}).value||'').trim();
+    }).filter(Boolean);
   });
-  results.knockout.winner=(document.getElementById('ko_winner')||{}).value||'';
-  results.knockout.thirdPlace=(document.getElementById('ko_third')||{}).value||'';
-  lbSave('lb_results',results); alert('Knockout results saved!'); loadLeaderboard();
+  results.ko.win=((document.getElementById('lbWinner')||{}).value||'').trim();
+  results.ko.third=((document.getElementById('lbThird')||{}).value||'').trim();
+  lbSet('lb_results',results);
+  alert('Knockout results saved!');
+  loadLeaderboard();
 }
 
 // Boot
 buildPots(); init(); renderNameInputs(); updatePotSummary(); updatePrize();
 renderPotsTab(); renderAllocations(); drawWheel([],false); updateHeaderSub();
+
 </script>
 </body>
 </html>
