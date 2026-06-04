@@ -399,6 +399,9 @@ canvas#wheel { display:block; max-width:100%; }
         <button class="btn" onclick="resetDraw()">Reset draw</button>
         <button class="btn" onclick="showTab('results')">Results →</button>
       </div>
+      <div class="btns" style="margin-top:8px;">
+        <button class="btn" style="background:var(--sun);color:#1a1a2e;border-color:var(--sun);font-weight:700;" onclick="autoDraw()">⚡ Auto Draw All</button>
+      </div>
     </div>
     <div class="draw-right">
       <div style="position:relative;display:inline-block;">
@@ -1082,6 +1085,58 @@ function resetDraw(){
   document.getElementById('bonusBtn').style.display='none'; document.getElementById('bonusBtn').disabled=false;
   document.getElementById('bonusBanner').classList.remove('show');
   document.getElementById('bonusPickPanel').classList.remove('show');
+}
+
+function autoDraw(){
+  if(!confirm('Auto draw will instantly assign all teams randomly to every player. Any existing draw will be reset. Continue?')) return;
+
+  // Reset first
+  if(animFrame) cancelAnimationFrame(animFrame);
+  init();
+
+  // Shuffle helper
+  function shuffle(arr){
+    const a=[...arr];
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [a[i],a[j]]=[a[j],a[i]];
+    }
+    return a;
+  }
+
+  // For each pot, shuffle teams and assign one to each player in a random order
+  POTS.forEach(pot=>{
+    const shuffledTeams = shuffle(pot);
+    const shuffledPlayers = shuffle([...playerNames]);
+    shuffledPlayers.forEach((player, i)=>{
+      if(i < shuffledTeams.length){
+        allocations[player].push(shuffledTeams[i]);
+      }
+    });
+  });
+
+  // Handle bonus teams — assign randomly to random players
+  if(BONUS.length > 0){
+    const shuffledBonus = shuffle(BONUS);
+    const shuffledPlayers = shuffle([...playerNames]);
+    shuffledBonus.forEach((team, i)=>{
+      if(i < shuffledPlayers.length){
+        bonusAlloc[shuffledPlayers[i]] = team;
+      }
+    });
+  }
+
+  // Update UI
+  renderPlayers();
+  renderAllocations();
+  updatePotStatus();
+  drawWheel([], false);
+  setResult(null, 'Auto draw complete!', 'All teams assigned — check Team Allocation tab');
+  document.getElementById('resultCard').className='result-card landed';
+  launchConfetti();
+
+  // Show results tab after a moment
+  setTimeout(()=>showTab('results'), 1200);
 }
 
 function showTab(id){
