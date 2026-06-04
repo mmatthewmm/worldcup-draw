@@ -527,6 +527,14 @@ canvas#wheel { display:block; max-width:100%; }
   </details>
 </div>
 
+<!-- RESET EVERYTHING BUTTON -->
+<div style="text-align:center;padding:40px 0 10px;">
+  <button onclick="resetEverything()" style="padding:13px 32px;background:transparent;border:2px solid var(--red);border-radius:10px;color:var(--red);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;" onmouseover="this.style.background='var(--red)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--red)'">
+    🗑 Reset Everything
+  </button>
+  <div style="font-size:11px;color:var(--muted);margin-top:8px;">Clears all draw data, players, results and leaderboard</div>
+</div>
+
 </div><!-- #app -->
 
 <script>
@@ -719,6 +727,7 @@ function changeCount(d){
   while(playerNames.length<numPlayers) playerNames.push('Player '+(playerNames.length+1));
   playerNames=playerNames.slice(0,numPlayers);
   renderNameInputs(); updatePotSummary(); updatePrize();
+  setupSave();
 }
 
 function renderNameInputs(){
@@ -747,6 +756,7 @@ function updatePotSummary(){
 
 function updatePrize(){
   buyIn=parseFloat(document.getElementById('buyinInput').value)||0;
+  setupSave();
   const prize=Math.round(buyIn*numPlayers*100)/100;
   document.getElementById('prizeDisplay').textContent='€'+prize.toLocaleString('en-IE',{minimumFractionDigits:0,maximumFractionDigits:2});
   updatePrizeBanner();
@@ -767,6 +777,7 @@ function buildPots(){
 
 function applySetup(){
   readNames(); updatePrize(); buildPots(); init();
+  setupSave();
   renderPotsTab(); renderPlayers(); renderAllocations(); updatePotStatus();
   drawWheel([],false);
   setResult(null,'Select a player, then spin','');
@@ -778,6 +789,7 @@ function applySetup(){
   document.getElementById('bonusBanner').classList.remove('show');
   document.getElementById('bonusPickPanel').classList.remove('show');
   updateHeaderSub();
+  localStorage.removeItem('wc26_draw'); // new setup = fresh draw
 }
 
 function updateHeaderSub(){
@@ -1037,6 +1049,7 @@ function spinWheel(){
   const teams=getRemaining(pot); if(!teams.length){setResult(null,'No teams left','');return;}
   doSpin(teams,false,team=>{
     allocations[currentPlayer].push(team);
+    drawSave();
     document.getElementById('resultCard').className='result-card landed';
     setResult(flag(team.n)+' '+team.n,`→ ${currentPlayer}`,`Pot ${pot+1} · FIFA #${team.r}`);
     renderAllocations(); updatePotStatus();
@@ -1078,6 +1091,7 @@ function assignBonus(player,teamName){
   const team=bonusRemaining.find(t=>t.n===teamName); if(!team)return;
   bonusAlloc[player]=team;
   bonusRemaining=bonusRemaining.filter(t=>t.n!==teamName);
+  drawSave();
   document.getElementById('bonusPickPanel').classList.remove('show');
   document.getElementById('resultCard').className='result-card bonus-landed';
   setResult(flag(team.n)+' '+team.n,`★ Bonus → ${player}`,`FIFA #${team.r}`);
@@ -1138,6 +1152,7 @@ function resetDraw(){
   document.getElementById('bonusBtn').style.display='none'; document.getElementById('bonusBtn').disabled=false;
   document.getElementById('bonusBanner').classList.remove('show');
   document.getElementById('bonusPickPanel').classList.remove('show');
+  localStorage.removeItem('wc26_draw');
 }
 
 function autoDraw(){
@@ -1184,6 +1199,7 @@ function autoDraw(){
   renderAllocations();
   updatePotStatus();
   drawWheel([], false);
+  drawSave();
   setResult(null, 'Auto draw complete!', 'All teams assigned — check Team Allocation tab');
   document.getElementById('resultCard').className='result-card landed';
   launchConfetti();
@@ -1439,9 +1455,165 @@ function lbSaveKO(){
   loadLeaderboard();
 }
 
-// Boot
-buildPots(); init(); renderNameInputs(); updatePotSummary(); updatePrize();
-renderPotsTab(); renderAllocations(); drawWheel([],false); updateHeaderSub();
+// Boot — restore saved state or start fresh
+/* ===== FULL STATE PERSISTENCE ===== */
+
+function setupSave(){
+  try{
+    localStorage.setItem('wc26_setup', JSON.stringify({
+      numPlayers, playerNames:[...playerNames], buyIn
+    }));
+  }catch(e){}
+}
+
+function setupRestore(){
+  try{
+    var raw=localStorage.getItem('wc26_setup');
+    if(!raw) return false;
+    var s=JSON.parse(raw);
+    if(!s||!s.playerNames||!s.playerNames.length) return false;
+    numPlayers=s.numPlayers||s.playerNames.length;
+    playerNames=[...s.playerNames];
+    buyIn=s.buyIn||10;
+    document.getElementById('countDisplay').textContent=numPlayers;
+    document.getElementById('buyinInput').value=buyIn;
+    renderNameInputs();
+    updatePotSummary();
+    return true;
+  }catch(e){ return false; }
+}
+
+function drawSave(){
+  try{
+    var allocSer={};
+    playerNames.forEach(function(p){ allocSer[p]=(allocations[p]||[]).map(function(t){return{n:t.n,r:t.r};}); });
+    var bonusSer={};
+    playerNames.forEach(function(p){ bonusSer[p]=bonusAlloc[p]?{n:bonusAlloc[p].n,r:bonusAlloc[p].r}:null; });
+    localStorage.setItem('wc26_draw', JSON.stringify({
+      numPlayers, playerNames:[...playerNames], buyIn,
+      allocations:allocSer, bonusAlloc:bonusSer, bonusMode,
+      savedAt:Date.now()
+    }));
+  }catch(e){ console.warn('drawSave failed',e); }
+}
+
+function drawRestore(){
+  try{
+    var raw=localStorage.getItem('wc26_draw');
+    if(!raw) return false;
+    var state=JSON.parse(raw);
+    if(!state||!state.playerNames||!state.playerNames.length) return false;
+
+    numPlayers=state.numPlayers||state.playerNames.length;
+    playerNames=[...state.playerNames];
+    buyIn=state.buyIn||10;
+
+    buildPots();
+
+    allocations={};
+    bonusAlloc={};
+    playerNames.forEach(function(p){
+      allocations[p]=(state.allocations&&state.allocations[p])||[];
+      bonusAlloc[p]=(state.bonusAlloc&&state.bonusAlloc[p])||null;
+    });
+
+    bonusMode=state.bonusMode||false;
+    bonusRemaining=BONUS.filter(function(t){
+      return !Object.values(bonusAlloc).some(function(b){return b&&b.n===t.n;});
+    });
+
+    document.getElementById('countDisplay').textContent=numPlayers;
+    document.getElementById('buyinInput').value=buyIn;
+    renderNameInputs();
+    updatePotSummary();
+    updatePrize();
+    renderPotsTab();
+    renderPlayers();
+    renderAllocations();
+    updatePotStatus();
+    updateHeaderSub();
+
+    if(bonusMode){
+      document.getElementById('bonusBanner').classList.add('show');
+      document.getElementById('spinBtn').style.display='none';
+      document.getElementById('bonusBtn').style.display='inline-block';
+    }
+
+    var total=Object.values(allocations).flat().length;
+    return total>0;
+  }catch(e){
+    console.warn('drawRestore failed',e);
+    return false;
+  }
+}
+
+function resetEverything(){
+  if(!confirm('Are you sure you want to reset EVERYTHING?\n\nThis will delete:\n• The draw and all team allocations\n• All player names and setup\n• The entire leaderboard and results\n\nThis cannot be undone.')) return;
+  if(!confirm('Last chance — are you absolutely sure? This deletes everything.')) return;
+  // Clear all localStorage keys
+  var keys=[];
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.startsWith('wc26_')) keys.push(k);
+  }
+  keys.forEach(function(k){ localStorage.removeItem(k); });
+  // Reset in-memory state
+  numPlayers=9;
+  playerNames=Array.from({length:9},function(_,i){return 'Player '+(i+1);});
+  buyIn=10;
+  document.getElementById('countDisplay').textContent=9;
+  document.getElementById('buyinInput').value=10;
+  buildPots(); init();
+  renderNameInputs(); updatePotSummary(); updatePrize();
+  renderPotsTab(); renderPlayers(); renderAllocations(); updatePotStatus();
+  drawWheel([],false); updateHeaderSub();
+  setResult(null,'Select a player, then spin','');
+  document.getElementById('resultCard').className='result-card';
+  document.getElementById('spinBtn').disabled=false;
+  document.getElementById('spinBtn').style.display='inline-block';
+  document.getElementById('bonusBtn').style.display='none';
+  document.getElementById('bonusBtn').disabled=false;
+  document.getElementById('bonusBanner').classList.remove('show');
+  document.getElementById('bonusPickPanel').classList.remove('show');
+  showTab('pots');
+  // Show confirmation
+  var banner=document.createElement('div');
+  banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);';
+  banner.textContent='Everything has been reset.';
+  document.body.appendChild(banner);
+  setTimeout(function(){banner.remove();},3000);
+}
+
+// --- BOOT ---
+(function(){
+  // Try to restore a full saved draw first
+  var hasDraw = drawRestore();
+  if(!hasDraw){
+    // No draw saved — restore setup only (names, count, buy-in)
+    var hasSetup = setupRestore();
+    buildPots();
+    if(!hasSetup){
+      // Fresh start
+      renderNameInputs();
+      updatePotSummary();
+    }
+    updatePrize();
+    renderPotsTab();
+    renderPlayers();
+    renderAllocations();
+    drawWheel([],false);
+    updateHeaderSub();
+  }
+
+  // Show restore banner if draw was found
+  if(hasDraw){
+    var banner=document.createElement('div');
+    banner.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);white-space:nowrap;';
+    banner.textContent='Draw restored from last session';
+    document.body.appendChild(banner);
+    setTimeout(function(){banner.remove();},3000);
+  }
+})();
 
 </script>
 </body>
