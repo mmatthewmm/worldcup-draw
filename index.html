@@ -455,6 +455,8 @@ canvas#wheel { display:block; max-width:100%; }
       <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text);border:1px solid var(--border);">SF win: 18pts</span>
       <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(232,35,58,.1);color:var(--red);border:1px solid rgba(232,35,58,.3);">3rd place win: 10pts</span>
       <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(232,35,58,.15);color:var(--red);border:1px solid rgba(232,35,58,.4);">WC Winner: 15pts</span>
+      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(123,47,247,.1);color:#7b2ff7;border:1px solid rgba(123,47,247,.3);">Most goals: 10pts</span>
+      <span style="font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(123,47,247,.1);color:#7b2ff7;border:1px solid rgba(123,47,247,.3);">Most clean sheets: 10pts</span>
     </div>
   </div>
 
@@ -521,6 +523,23 @@ canvas#wheel { display:block; max-width:100%; }
           </div>
         </div>
         <button onclick="lbSaveKO()" style="width:100%;padding:9px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Save Knockout Results</button>
+      </div>
+
+      <!-- Bonus Stats -->
+      <div style="margin-top:16px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;">Bonus Stats</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Award bonus points for tournament-wide stats once known.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Most Total Goals</div>
+            <select id="lbTopScorer" style="width:100%;padding:7px 9px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;outline:none;font-family:inherit;"><option value=""></option></select>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Most Clean Sheets</div>
+            <select id="lbCleanSheets" style="width:100%;padding:7px 9px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;outline:none;font-family:inherit;"><option value=""></option></select>
+          </div>
+        </div>
+        <button onclick="lbSaveBonusStats()" style="width:100%;padding:9px;background:var(--sky);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Save Bonus Stats</button>
       </div>
 
     </div>
@@ -1247,7 +1266,7 @@ var ALL_WC_TEAMS = (function(){
   return t.sort();
 })();
 
-var LB_PTS = {gw:5,gr:3,g3:2,r32:5,r16:8,qf:12,sf:18,third:10,win:15};
+var LB_PTS = {gw:5,gr:3,g3:2,r32:5,r16:8,qf:12,sf:18,third:10,win:15,topscorer:10,cleansheets:10};
 
 function lbSet(k,v){try{localStorage.setItem('wc26_'+k,JSON.stringify(v));}catch(e){}}
 function lbGet(k){try{var s=localStorage.getItem('wc26_'+k);return s?JSON.parse(s):null;}catch(e){return null;}}
@@ -1273,6 +1292,8 @@ function lbScore(teams,results){
   });
   if(ko.third&&teams.indexOf(ko.third)>=0)add(ko.third,LB_PTS.third);
   if(ko.win&&teams.indexOf(ko.win)>=0)add(ko.win,LB_PTS.win);
+  if(results.topScorer&&teams.indexOf(results.topScorer)>=0)add(results.topScorer,LB_PTS.topscorer);
+  if(results.cleanSheets&&teams.indexOf(results.cleanSheets)>=0)add(results.cleanSheets,LB_PTS.cleansheets);
   return{total:total,bd:bd};
 }
 
@@ -1322,6 +1343,7 @@ function loadLeaderboard(){
   lbRenderPlayerRows(players);
   lbRenderGroupRows(results.groups||{});
   lbRenderKORows(results.ko||{});
+  lbRenderBonusStats(results);
 }
 
 function lbRenderPlayerRows(players){
@@ -1381,6 +1403,14 @@ function lbRenderKORows(ko){
   var tEl=document.getElementById('lbThird');
   if(wEl){wEl.innerHTML=finalOpts;if(ko.win)for(var i=0;i<wEl.options.length;i++){if(wEl.options[i].value===ko.win){wEl.selectedIndex=i;break;}}}
   if(tEl){tEl.innerHTML=finalOpts;if(ko.third)for(var i=0;i<tEl.options.length;i++){if(tEl.options[i].value===ko.third){tEl.selectedIndex=i;break;}}}
+}
+
+function lbRenderBonusStats(results){
+  var finalOpts='<option value=""></option>'+ALL_WC_TEAMS.map(function(t){return '<option value="'+t+'">'+fl(t)+' '+t+'</option>';}).join('');
+  var tsEl=document.getElementById('lbTopScorer');
+  var csEl=document.getElementById('lbCleanSheets');
+  if(tsEl){tsEl.innerHTML=finalOpts;if(results.topScorer)for(var i=0;i<tsEl.options.length;i++){if(tsEl.options[i].value===results.topScorer){tsEl.selectedIndex=i;break;}}}
+  if(csEl){csEl.innerHTML=finalOpts;if(results.cleanSheets)for(var j=0;j<csEl.options.length;j++){if(csEl.options[j].value===results.cleanSheets){csEl.selectedIndex=j;break;}}}
 }
 
 function lbImportFromDraw(){
@@ -1452,6 +1482,15 @@ function lbSaveKO(){
   results.ko.third=(document.getElementById('lbThird')||{}).value||'';
   lbSet('lb_results',results);
   alert('Knockout results saved!');
+  loadLeaderboard();
+}
+
+function lbSaveBonusStats(){
+  var results=lbGet('lb_results')||{groups:{},ko:{}};
+  results.topScorer=(document.getElementById('lbTopScorer')||{}).value||'';
+  results.cleanSheets=(document.getElementById('lbCleanSheets')||{}).value||'';
+  lbSet('lb_results',results);
+  alert('Bonus stats saved!');
   loadLeaderboard();
 }
 
